@@ -1,12 +1,15 @@
 package pieces;
 
+import board.Game;
 import board.Move;
+import board.Tile;
 
 import java.util.ArrayList;
 
 public abstract class Piece {
 
-    public boolean white = false;
+    public boolean white;
+    public boolean alive = true;
 
     public Piece(boolean white) {
         this.white = white;
@@ -16,7 +19,7 @@ public abstract class Piece {
         return white;
     }
 
-    public abstract ArrayList<Move> generateValidMoves();
+    public abstract ArrayList<Move> generateValidMoves(Game game, Tile clickedTile);
     public abstract String getType();
 
 }

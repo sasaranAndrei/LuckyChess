@@ -8,29 +8,32 @@ public class Tile {
     private int coordX;
     private int coordY;
     private Piece piece;
-    private boolean whiteTile;
+    private boolean forValidMove = false;
 
-    public Tile(int coordX, int coordY, boolean whiteTile){ // used for create emptyTile
+    public Tile(int coordX, int coordY){ // used for create emptyTile
         this.coordX = coordX;
         this.coordY = coordY;
-        this.whiteTile = whiteTile;
         this.piece = null;
     }
 
-    public Tile(int coordX, int coordY, boolean whiteTile, Piece piece) {
+    public Tile(int coordX, int coordY, Piece piece) {
         this.coordX = coordX;
         this.coordY = coordY;
-        this.whiteTile = whiteTile;
         this.piece = piece;
     }
 
     @Override
     public String toString() {
         String pieceType;
-        if (piece == null) pieceType = "";
+        if (forValidMove) pieceType = ".";
+        else if (piece == null) pieceType = "";
         else pieceType = piece.getType();
 
-        return String.format("%-3s", pieceType);
+        return String.format("%-3s|", pieceType);
+    }
+
+    public String getCoordinates(){
+        return "[x=" +  coordX + ",y=" + coordY + "]";
     }
 
     public Piece getPiece() {
@@ -41,8 +44,28 @@ public class Tile {
         this.piece = piece;
     }
 
-    public String tileColor(){
-        if (whiteTile) return String.format("%-5s", "white");
-        else return String.format("%-5s", "black");
+    public int getCoordX() {
+        return coordX;
     }
+
+    public void setCoordX(int coordX) {
+        this.coordX = coordX;
+    }
+
+    public int getCoordY() {
+        return coordY;
+    }
+
+    public void setCoordY(int coordY) {
+        this.coordY = coordY;
+    }
+
+    public void setForValidMove(boolean forValidMove) {
+        this.forValidMove = forValidMove;
+    }
+
+
+
+
+
 }
