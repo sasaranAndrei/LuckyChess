@@ -7,13 +7,15 @@ import pieces.*;
 public class MainClass {
     public static void main(String[] args) {
         Board boardGUI = new Board();
-        Game game = boardGUI.getGame();
+        //Game game = boardGUI.getGame();
+
         //System.out.println(game.getChessboard());
         //game.showAllValidMoves(game.getChessboard().getWhitePieces());
         //game.getChessboard().removePieceFromTile(6,5);
         //game.getChessboard().removePieceFromTile(6,3);
         //game.getChessboard().removePieceFromTile(6,4);
-        game.showValidMoves(game.getChessboard().getBoard()[7][4]);
+
+        //game.showValidMoves(game.getChessboard().getBoard()[7][4]);
 
         /*
         Game game = new Game("sosy");

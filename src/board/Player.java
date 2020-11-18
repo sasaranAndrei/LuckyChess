@@ -1,17 +1,31 @@
 //package com.example.luckychess.board;
 package board;
+
+import pieces.King;
+
 public class Player {
 
     private String name;
-    private boolean human; // omu joaca cu albu mereu
-    private boolean underAttack = false;
+    private boolean human;
+    private boolean white; // pentru ca se poate schimba pe parcursu jocului.
+    private King king;
 
-    public Player(String name, boolean human) {
+    public Player(String name, boolean human, boolean white, King king) {
         this.name = name;
         this.human = human;
+        this.white = white;
+        this.king = king;
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean isWhite() {
+        return white;
+    }
+
+    public boolean isHuman() {
+        return human;
     }
 }

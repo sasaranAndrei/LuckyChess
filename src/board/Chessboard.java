@@ -81,6 +81,28 @@ public class Chessboard {
                 }
                 whiteTileColor = !whiteTileColor;
             }
+        } else if (template == "TEST") {
+            for (int i = 0; i < 8; i++){
+                for (int j = 0; j < 8; j++){
+                    board[i][j] = new Tile(i,j);
+                }
+            }
+            // black pieces
+            board[0][3].setPiece(new Queen(false));
+            board[0][4].setPiece(new King(false));
+            board[0][5].setPiece(new Bishop(false));
+            board[0][6].setPiece(new Knight(false));
+            board[0][7].setPiece(new Rook(false));
+            board[1][4].setPiece(new Pawn(false));
+            // white pieces
+            board[7][3].setPiece(new Queen(true));
+            board[7][4].setPiece(new King(true));
+            board[7][5].setPiece(new Bishop(true));
+            board[7][6].setPiece(new Knight(true));
+            board[7][7].setPiece(new Rook(true));
+            board[6][4].setPiece(new Pawn(true));
+
+
         }
 
         whitePieces = storePieces(true);

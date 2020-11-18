@@ -2,6 +2,7 @@
 package board;
 //import android.util.Log;
 
+import gui.Board;
 import pieces.*;
 
 import java.util.ArrayList;
@@ -12,9 +13,13 @@ public class Game {
     private Player humanPlayer;
     private Player computerPlayer;
 
-    private Player playerToMove; // omu joaca cu albu mereu
+    private Player playerToMove; // referinta catre jucatorul curent
 
+    private Player winner;
     private Chessboard chessboard;
+    private Dice dice = new Dice();
+
+    private Board boardGUI;
 
     private Status status = Status.PLAY;
 
@@ -22,17 +27,48 @@ public class Game {
         PLAY,
         WHITE_IN_CHECK,
         BLACK_IN_CHECK,
-        WHITE_WIN,
-        BLACK_WIN,
+        WIN, // si jucatoru care a castigat in Player winner
         TIE
     }
 
 
-    public Game (String playerName){
-        humanPlayer = new Player(playerName, true);
+    public Game (String playerName, Board boardGUI){
+        this.boardGUI = boardGUI;
+        chessboard = new Chessboard("TEST");
+        humanPlayer = new Player(playerName, true, true, (King) chessboard.getBoard()[7][4].getPiece());
+        computerPlayer = new Player("LORD INATEUR", false, false, (King) chessboard.getBoard()[0][4].getPiece());
         playerToMove = humanPlayer;
-        //chessboard = new Chessboard("EMPTY");
-        chessboard = new Chessboard();
+        this.play();
+        //chessboard = new Chessboard();
+    }
+
+    private void play() {
+        while (status == Status.PLAY ||  // cat timp inca se poate juca
+                status == Status.WHITE_IN_CHECK || status == Status.BLACK_IN_CHECK){
+            if (status == Status.WHITE_IN_CHECK || status == Status.BLACK_IN_CHECK){ // daca jucatorul curent e in sah
+                if (isCheckMate(playerToMove)){ // in cazu asta playerToMove o sa fie jucatorul cu alb
+                    if (playerToMove == humanPlayer){ // daca omu si o luat sah mat
+                         winner = computerPlayer;
+                    }
+                    else { // daca calculatorul si a luat sah mat
+                        winner = humanPlayer;
+                    }
+                    status = Status.WIN;
+                    break; // daca e sah mat se iese din while (play) si se constata castigatoruu
+                }
+            }
+            // TO DO => PLAY MODE
+            // mai intai dam cu zaru
+            dice.rowDices();
+            boardGUI.setDices(dice, playerToMove);
+            status = Status.WIN; // ca sa nu intre in bucla infinita
+
+        }
+        // TO DO => anunta castigatorul
+    }
+
+    private boolean isCheckMate(Player playerToMove) {
+        return false;
     }
 
     public Status getStatus() {
