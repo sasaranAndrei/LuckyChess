@@ -39,7 +39,6 @@ public class Game {
         computerPlayer = new Player("LORD INATEUR", false, false, (King) chessboard.getBoard()[0][4].getPiece());
         playerToMove = humanPlayer;
         this.play();
-        //chessboard = new Chessboard();
     }
 
     private void play() {

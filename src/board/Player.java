@@ -10,6 +10,10 @@ public class Player {
     private boolean white; // pentru ca se poate schimba pe parcursu jocului.
     private King king;
 
+    public Player (){
+
+    }
+
     public Player(String name, boolean human, boolean white, King king) {
         this.name = name;
         this.human = human;

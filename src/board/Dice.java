@@ -7,15 +7,15 @@ public class Dice {
     private static Random random = new Random();
     private static String[] rules = {"", "", // valorile pentru 0 si 1
         "SCHIMBA TABLA", // 2
-        "DISPAR REGINELE. URMATOAREA DATA APAR PE POZITIILE UNDE AU DISPARUT", // 3
-        "TURA POATE MERGE PE DIAGONALA (DOAR TURA ASTA)", // 4
-        "INTERSCHIMBA PE TABLA UN CAL CU UN NEBUN (PROPRIU)", // 5
+        "<html> DISPAR REGINELE. URMATOAREA DATA <br> APAR PE POZITIILE UNDE AU DISPARUT </html>", // 3
+        "<html> TURA POATE MERGE PE <br> DIAGONALA (DOAR TURA ASTA) </html>", // 4
+        "<html> INTERSCHIMBA PE TABLA <br> UN CAL CU UN NEBUN (PROPRIU) </html>", // 5
         "ACUMULEZI UN PUNCT MAGIC", // 6
             "NICI O REGULA", // 7
         "ACUMULEZI UN PUNCT MAGIC", // 8
-        "SCHIMBA TABLA", // 9
-        "SCHIMBA TABLA", // 10
-        "DISPAR REGINELE", // 11
+        "<html> INTERSCHIMBA PE TABLA <br> UN CAL CU UN NEBUN (PROPRIU) </html>", // 9
+        "<html> TURA POATE MERGE PE <br> DIAGONALA (DOAR TURA ASTA) </html>", // 10
+        "<html> DISPAR REGINELE. URMATOAREA DATA <br> APAR PE POZITIILE UNDE AU DISPARUT </html>", // 11
         "SCHIMBA TABLA", // 12
             // LA 5 PUNCTE MAGICE => POTI OPTA SA BLOCHEZI UN EFECT AL ADVERSARULUI
             // DACA NU IESE ASA => DOAR PUNCTE IN PLUS SI AIA E
@@ -42,4 +42,5 @@ public class Dice {
     public String getRule (){
         return rule;
     }
+
 }
