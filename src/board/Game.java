@@ -17,9 +17,8 @@ public class Game {
 
     private Player winner;
     private Chessboard chessboard;
-    private Dice dice = new Dice();
 
-    private Board boardGUI;
+    //private Board boardGUI;
 
     private Status status = Status.PLAY;
 
@@ -32,9 +31,9 @@ public class Game {
     }
 
 
-    public Game (String playerName, Board boardGUI){
-        this.boardGUI = boardGUI;
-        chessboard = new Chessboard("TEST");
+    public Game (String playerName){
+        //this.boardGUI = boardGUI;
+        chessboard = new Chessboard();
         humanPlayer = new Player(playerName, true, true, (King) chessboard.getBoard()[7][4].getPiece());
         computerPlayer = new Player("LORD INATEUR", false, false, (King) chessboard.getBoard()[0][4].getPiece());
         playerToMove = humanPlayer;
@@ -42,6 +41,7 @@ public class Game {
     }
 
     private void play() {
+        int counter = 0;
         while (status == Status.PLAY ||  // cat timp inca se poate juca
                 status == Status.WHITE_IN_CHECK || status == Status.BLACK_IN_CHECK){
             if (status == Status.WHITE_IN_CHECK || status == Status.BLACK_IN_CHECK){ // daca jucatorul curent e in sah
@@ -55,11 +55,19 @@ public class Game {
                     status = Status.WIN;
                     break; // daca e sah mat se iese din while (play) si se constata castigatoruu
                 }
+
+
+
             }
+
+            if (counter % 2 == 0) playerToMove = humanPlayer;
+            else playerToMove = computerPlayer;
+
+
             // TO DO => PLAY MODE
             // mai intai dam cu zaru
-            dice.rowDices();
-            boardGUI.setDices(dice, playerToMove);
+            //dice.rowDices();
+        //    boardGUI.setDices(dice, playerToMove);
             status = Status.WIN; // ca sa nu intre in bucla infinita
 
         }
@@ -76,6 +84,18 @@ public class Game {
 
     public Player getPlayerToMove() {
         return playerToMove;
+    }
+
+    public Player getWinner() {
+        return winner;
+    }
+
+    public void setWinner(Player winner) {
+        this.winner = winner;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public Player getHumanPlayer() {

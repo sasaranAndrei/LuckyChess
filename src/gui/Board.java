@@ -1,9 +1,7 @@
 package gui;
 
-import board.Dice;
-import board.Game;
-import board.Player;
-import board.Tile;
+import board.*;
+import pieces.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,25 +16,20 @@ public class Board{
         private static Color WHITE_TILE_COLOR = new Color(255, 255, 255);
         private static Color BLACK_TILE_COLOR = new Color(100, 73, 38);
         // HUMAN PANEL
-        private static Dimension HUMAN_PANEL_DIMENSION = new Dimension(400, 30);
+        private static Dimension HUMAN_PANEL_DIMENSION = new Dimension(400, 40);
 
-        private Game game;
         private JFrame mainFrame;
         private BoardPanel boardPanel;
 
-        private JPanel testComputerPanel;
         private JPanel computerPanel;
         private JPanel humanPanel;
-
-
-        private JLabel playerName;
-        private JLabel computerName;
+        private String humanPlayerName;
 
         private ArrayList<ImageIcon> diceIcons = new ArrayList<>(7); //= new ImageIcon("images/dice1.png");
 
-    public Board() throws HeadlessException {
+    private void loadIcons (){
         diceIcons.add(new ImageIcon("images/dice1.png")); // il punema ici de forma ca altfel loam eroare de index mai jos
-        // loading images
+        // LOAD ICONS
         for (int i = 1; i <= 6; i++){
             String fileName = "images/dice" + i + ".png";
             ImageIcon imageIcon = new ImageIcon(fileName);
@@ -45,11 +38,13 @@ public class Board{
             imageIcon = new ImageIcon(resizedImage);
             diceIcons.add(i, imageIcon);
         }
+    }
 
-
+    public Board(String humanPlayerName, Game game) throws HeadlessException {
+        loadIcons();
 
         this.mainFrame = new JFrame("LUCKY CHESS");
-        this.mainFrame.setSize(600,600); // [600,600]
+        this.mainFrame.setSize(700,700); // [600,600]
         this.mainFrame.setLayout(new BorderLayout());
         this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -57,43 +52,63 @@ public class Board{
         this.computerPanel = new ComputerPanel();
         this.mainFrame.add(computerPanel, BorderLayout.NORTH);
         // BOARD PANEL
-        this.boardPanel = new BoardPanel();
+        this.boardPanel = new BoardPanel(game);
         this.mainFrame.add(boardPanel, BorderLayout.CENTER);
         // HUMAN PANEL
-        this.humanPanel = new HumanPanel();
+        this.humanPanel = new HumanPanel(humanPlayerName);
+        this.mainFrame.add(humanPanel, BorderLayout.SOUTH);
 
         this.mainFrame.setVisible(true);
 
-        this.game = new Game ("SOSY", this);
+        this.humanPlayerName = humanPlayerName;
+
+        loadPieceIcons();
+
+
     }
 
-    public Game getGame() {
-        return game;
+
+    private void loadPieceIcons (){
+        // set the pieces (icons)
+
+        /*
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                String pieceType = "";
+                /// TO DO => LOAD ICONS OF PIECES
+                this.boardPanel.tileBoard[i][j].pieceIcon = new ImageIcon(iconLocation + pieceType + ".png");
+                //this.boardPanel.tileBoard[i][j].pieceIcon =
+                //        new ImageIcon("images/dice1.png"
+            }
+
+        }
+        */
     }
 
     public void setDices(Dice dice, Player player) {
         int firstDice = dice.getFirstDice();
         int secondDice = dice.getSecondDice();
-        JPanel panel;
 
         if (player.isHuman() == true){
-
+            HumanPanel humanPanel = (HumanPanel) this.humanPanel;
+            humanPanel.getFirstDiceLabel().setIcon(diceIcons.get(firstDice));
+            humanPanel.getSecondDiceLabel().setIcon(diceIcons.get(secondDice));
+            humanPanel.getRuleDescriptionLabel().setText(dice.getRule());
         }
         else {
-
+            ComputerPanel computerPanel = (ComputerPanel) this.computerPanel;
+            // dices
+            computerPanel.getFirstDiceLabel().setIcon(diceIcons.get(firstDice));
+            computerPanel.getSecondDiceLabel().setIcon(diceIcons.get(secondDice));
+            // rule
+            computerPanel.getRuleDescriptionLabel().setText(dice.getRule());
         }
-        ComputerPanel computerPanel = (ComputerPanel) this.computerPanel;
-        // dices
-        computerPanel.getFirstDiceLabel().setIcon(diceIcons.get(firstDice));
-        computerPanel.getSecondDiceLabel().setIcon(diceIcons.get(secondDice));
-        // rule
-        computerPanel.getRuleDescriptionLabel().setText(dice.getRule());
 
     }
 
 
     private class HumanPanel extends JPanel{
-        JLabel nameLabel = new JLabel("");
+        JLabel nameLabel = new JLabel("<insert-name>");
         JLabel ruleDescriptionLabel = new JLabel("");
         JLabel firstDiceLabel = new JLabel("");
         JLabel secondDiceLabel = new JLabel("");
@@ -113,6 +128,18 @@ public class Board{
             this.add(nameLabel);
             setPreferredSize(HUMAN_PANEL_DIMENSION);
             validate();
+        }
+
+        public JLabel getRuleDescriptionLabel() {
+            return ruleDescriptionLabel;
+        }
+
+        public JLabel getFirstDiceLabel() {
+            return firstDiceLabel;
+        }
+
+        public JLabel getSecondDiceLabel() {
+            return secondDiceLabel;
         }
     }
 
@@ -156,11 +183,11 @@ public class Board{
     private class BoardPanel extends JPanel{
         TilePanel[][] tileBoard = new TilePanel[8][8];
 
-        BoardPanel() {
+        BoardPanel(Game game) {
             super(new GridLayout(8,8));
             for (int i = 0; i < 8; i++){
                 for (int j = 0; j < 8; j++){
-                    TilePanel tilePanel = new TilePanel(this, i, j); // aici porbabil voi face legutura cu controlleru cum ar vnei
+                    TilePanel tilePanel = new TilePanel(this, i, j, game); // aici porbabil voi face legutura cu controlleru cum ar vnei
                     tileBoard[i][j] = tilePanel;
                     this.add(tilePanel); // ?
                 }
@@ -174,14 +201,36 @@ public class Board{
         private int coordX;
         private int coordY;
 
-        TilePanel(BoardPanel boardPanel, int coordX, int coordY){
+        TilePanel(BoardPanel boardPanel, int coordX, int coordY, Game game){
             super(new GridBagLayout());
             this.coordX = coordX;
             this.coordY = coordY;
 
             setPreferredSize(TILE_PANEL_DIMENSION);
             setTileColor(); // am facut asta in Tile
+            setPieceIcon(game);
             validate();
+        }
+
+        private void setPieceIcon(Game game){
+            this.removeAll();
+            Tile[][] chessboard = game.getChessboard().getBoard();
+            if (chessboard[coordX][coordY].isTileOccupied()){
+                Piece piece = chessboard[coordX][coordY].getPiece();
+                String fileName = "images/" + piece.getType();
+                if (piece.isWhite()) fileName += "W";
+                else fileName += "B";
+                fileName += ".png";
+
+                ImageIcon imageIcon = new ImageIcon(fileName);
+                Image image = imageIcon.getImage();
+                Image resizedImage = image.getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+                imageIcon = new ImageIcon(resizedImage);
+                add(new JLabel(imageIcon));
+
+            }
+
+
         }
 
         private void setTileColor() {
@@ -202,6 +251,8 @@ public class Board{
                 }
             }
         }
+
+
 
     }
 }

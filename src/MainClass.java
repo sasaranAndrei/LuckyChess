@@ -2,11 +2,15 @@ import board.Chessboard;
 import board.Game;
 import board.Tile;
 import gui.Board;
+import gui.Start;
 import pieces.*;
 
 public class MainClass {
     public static void main(String[] args) {
-        Board boardGUI = new Board();
+        Start startGUI = new Start();
+
+
+        //Board board = new Board("s");
         //Game game = boardGUI.getGame();
 
         //System.out.println(game.getChessboard());

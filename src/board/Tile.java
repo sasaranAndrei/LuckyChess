@@ -64,7 +64,12 @@ public class Tile {
         this.forValidMove = forValidMove;
     }
 
-
+    public boolean isTileOccupied(){
+        if (this.piece == null){
+            return false;
+        }
+        return true;
+    }
 
 
 
