@@ -9,7 +9,6 @@ public class MainClass {
     public static void main(String[] args) {
         Start startGUI = new Start();
 
-
         //Board board = new Board("s");
         //Game game = boardGUI.getGame();
 

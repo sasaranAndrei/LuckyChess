@@ -25,7 +25,7 @@ public class Dice {
     private int secondDice = 1;
     private String rule = rules[2];
 
-    public void rowDices (){
+    public void rollDice (){
         firstDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
         secondDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
         rule = rules[firstDice + secondDice];
@@ -43,4 +43,12 @@ public class Dice {
         return rule;
     }
 
+    @Override
+    public String toString() {
+        return "Dice{" +
+                "firstDice=" + firstDice +
+                ", secondDice=" + secondDice +
+                ", rule='" + rule + '\'' +
+                '}';
+    }
 }

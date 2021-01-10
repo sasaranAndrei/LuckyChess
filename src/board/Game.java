@@ -19,7 +19,8 @@ public class Game {
     private Chessboard chessboard;
 
     //private Board boardGUI;
-
+    private ArrayList<Piece> capturedPieces = new ArrayList<>();
+    private ArrayList<Move> madeMoves = new ArrayList<>();
     private Status status = Status.PLAY;
 
     public enum Status {
@@ -34,45 +35,19 @@ public class Game {
     public Game (String playerName){
         //this.boardGUI = boardGUI;
         chessboard = new Chessboard();
+
+        ArrayList<Move> whiteStandardLegalMoves = generateAllValidMoves(chessboard.getWhitePieces());
+        ArrayList<Move> blackStandardLegalMoves = generateAllValidMoves(chessboard.getBlackPieces());
+
+        //humanPlayer = new HumanPlayer(this, whiteStandardLegalMoves, blackStandardLegalMoves);
+        //computerPlayer = new ComputerPlayer(this, whiteStandardLegalMoves, blackStandardLegalMoves);
         humanPlayer = new Player(playerName, true, true, (King) chessboard.getBoard()[7][4].getPiece());
         computerPlayer = new Player("LORD INATEUR", false, false, (King) chessboard.getBoard()[0][4].getPiece());
         playerToMove = humanPlayer;
-        this.play();
+        //his.play();
     }
 
-    private void play() {
-        int counter = 0;
-        while (status == Status.PLAY ||  // cat timp inca se poate juca
-                status == Status.WHITE_IN_CHECK || status == Status.BLACK_IN_CHECK){
-            if (status == Status.WHITE_IN_CHECK || status == Status.BLACK_IN_CHECK){ // daca jucatorul curent e in sah
-                if (isCheckMate(playerToMove)){ // in cazu asta playerToMove o sa fie jucatorul cu alb
-                    if (playerToMove == humanPlayer){ // daca omu si o luat sah mat
-                         winner = computerPlayer;
-                    }
-                    else { // daca calculatorul si a luat sah mat
-                        winner = humanPlayer;
-                    }
-                    status = Status.WIN;
-                    break; // daca e sah mat se iese din while (play) si se constata castigatoruu
-                }
 
-
-
-            }
-
-            if (counter % 2 == 0) playerToMove = humanPlayer;
-            else playerToMove = computerPlayer;
-
-
-            // TO DO => PLAY MODE
-            // mai intai dam cu zaru
-            //dice.rowDices();
-        //    boardGUI.setDices(dice, playerToMove);
-            status = Status.WIN; // ca sa nu intre in bucla infinita
-
-        }
-        // TO DO => anunta castigatorul
-    }
 
     private boolean isCheckMate(Player playerToMove) {
         return false;
@@ -115,35 +90,11 @@ public class Game {
         this.playerToMove = playerToMove;
     }
 
-    //arg = a tile from where it will be computed the valid moves for the piece on that tile
-    public ArrayList<Move> generateValidMoves(Tile tileClicked){
-        Piece currentPiece = tileClicked.getPiece();
-        return currentPiece.generateValidMoves(this, tileClicked);
-    }
 
-    public ArrayList<Move> generateAllValidMoves (ArrayList<Piece> pieces){
-        ArrayList<Move> allLegalMoves = new ArrayList<>();
-        for (Piece piece : pieces){
-            Tile tileSpecific = findTheTile(chessboard, piece);
-            if (tileSpecific == null){
-                System.out.println("some bug right there ma man u know what am sayin");
-            }
-            allLegalMoves.addAll(piece.generateValidMoves(this, tileSpecific));
-        }
-        return allLegalMoves;
-    }
 
-    private Tile findTheTile (Chessboard chessboard, Piece piece){
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
-                if (chessboard.getBoard()[i][j].getPiece() == piece){
-                    return chessboard.getBoard()[i][j];
-                }
-            }
-        }
-        return null;
-    }
 
+
+    // valid moves for printing.
     public void showValidMoves (Tile clickedTile) {
         ArrayList<Move> validMoves = this.generateValidMoves(clickedTile);
         Chessboard copyChessboard = new Chessboard(this.chessboard.getBoard()); // copy the chessboard to print valid moves
@@ -172,6 +123,48 @@ public class Game {
             }
             this.showValidMoves(tileSpecific);
         }
+    }
+
+    // generate allValidMoves
+    private Tile findTheTile (Chessboard chessboard, Piece piece){
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                if (chessboard.getBoard()[i][j].getPiece() == piece){
+                    return chessboard.getBoard()[i][j];
+                }
+            }
+        }
+        return null;
+    }
+
+    //arg = a tile from where it will be computed the valid moves for the piece on that tile
+    public ArrayList<Move> generateValidMoves(Tile tileClicked){
+        Piece currentPiece = tileClicked.getPiece();
+        return currentPiece.generateValidMoves(this, tileClicked);
+    }
+
+    public ArrayList<Move> generateAllValidMoves (ArrayList<Piece> pieces){
+        ArrayList<Move> allLegalMoves = new ArrayList<>();
+        for (Piece piece : pieces){
+            Tile tileSpecific = findTheTile(chessboard, piece);
+            if (tileSpecific == null){
+                System.out.println("some bug right there ma man u know what am sayin");
+            }
+            allLegalMoves.addAll(piece.generateValidMoves(this, tileSpecific));
+        }
+        return allLegalMoves;
+    }
+
+    public void makeMove (Player player, Move move){
+        madeMoves.add(move);
+        Piece piece = move.getEnd().getPiece();
+        if (piece != null) { // daca e o piesa e rip
+            chessboard.removePieceFromTile(move.getEnd());
+            piece.alive = false;
+            capturedPieces.add(piece);
+        }
+        move.getEnd().setPiece(move.getStart().getPiece()); // mutam piesa care trebe
+        chessboard.removePieceFromTile(move.getStart());
     }
 
 

@@ -14,6 +14,8 @@ import java.io.IOException;
 
 public class Start {
     private static Dimension frameSize = new Dimension(550,375);
+    private static Dimension rulesSize = new Dimension(400,500);
+
     private static String backgroundLocation = "images/mainBackground.png";
 
     private JFrame startFrame;
@@ -58,24 +60,41 @@ public class Start {
         this.playButton.setBackground(Color.BLACK);
         this.playButton.setOpaque(true);
         this.playButton.setForeground(Color.WHITE);
+
+        this.rulesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame rulesFrame = new JFrame("RULES FRAME");
+                rulesFrame.setSize(rulesSize);
+
+                //this.startFrame.setLayout(new BorderLayout());
+                rulesFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                rulesFrame.setResizable(false);
+                rulesFrame.setVisible(true);
+                rulesFrame.setLocation(1100, 200);
+
+                // TO DO: sa pun regulile
+            }
+        });
+
+
         this.playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String humanPlayerName = humanPlayerText.getText();
-                System.out.println(humanPlayerName);
 
-                Game game = new Game(humanPlayerName);
-                Board boardFrame = new Board(humanPlayerName, game);
+                //Game game = new Game(humanPlayerName);
+                Board boardFrame = new Board(humanPlayerName);
+                boardFrame.play();
+                //Controller controller = new Controller(game, boardFrame);
 
-                Controller controller = new Controller(game, boardFrame);
-
-                //controller.loadPieceIcons();
                 //controller.play();
 
 
                 startFrame.setVisible(false);
             }
         });
+
 
 
         this.startFrame.setLayout(new FlowLayout());

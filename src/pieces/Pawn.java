@@ -22,6 +22,7 @@ public class Pawn extends Piece {
         int currentX = clickedTile.getCoordX(); // luam coord
         int currentY = clickedTile.getCoordY(); // curente [ca de mutat oricum muta :)) ]
         if (clickedTile.getPiece().isWhite()) { // pion alb
+            // mers in fata
             if (!game.getChessboard().indexOutOfBound(currentX - 1 , currentY)){ // daca indexu i ok CAND MERGE IN FATA
                 // mutarea in fata
                 if (game.getChessboard().getBoard()[currentX - 1][currentY].getPiece() == null){ // daca poate merge in fata

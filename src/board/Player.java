@@ -32,4 +32,15 @@ public class Player {
     public boolean isHuman() {
         return human;
     }
+
+    /*
+    public MoveTransition makeMove (Move move){
+        return null;
+    }
+     */
+    public void makeMove (Move move){
+
+    }
+
+
 }

@@ -23,8 +23,6 @@ public class Chessboard {
     private ArrayList<Piece> blackPieces;
 
     public Chessboard() {
-        //board =
-        // initialize chessboard
         boolean whiteTileColor = true;
 
         // big pieces tiles
@@ -114,6 +112,8 @@ public class Chessboard {
         this.board = board;
     }
 
+
+
     public Tile[][] getBoard() {
         return board;
     }
@@ -182,8 +182,12 @@ public class Chessboard {
         return pieces;
     }
 
-    public void removePieceFromTile (int removeX, int removeY){
+    public void removePieceFromTile (Tile tile)
+    {
+        int removeX = tile.getCoordX();
+        int removeY = tile.getCoordY();
         this.getBoard()[removeX][removeY].setPiece(null);
+
     }
 
 

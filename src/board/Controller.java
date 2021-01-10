@@ -4,6 +4,8 @@ import board.Game;
 import gui.Board;
 import pieces.Piece;
 
+import java.util.concurrent.TimeUnit;
+
 public class Controller {
     private Game game;
     private Board boardGUI;
@@ -17,8 +19,10 @@ public class Controller {
 
     public void play (){
         int rowCounter = 0;
+        game.setStatus(Game.Status.PLAY);
 
-        while (game.getStatus() == Game.Status.PLAY ||  // cat timp inca se poate juca
+
+        while (rowCounter < 5 && game.getStatus() == Game.Status.PLAY ||  // cat timp inca se poate juca
                 game.getStatus() == Game.Status.WHITE_IN_CHECK || game.getStatus() == Game.Status.BLACK_IN_CHECK){
             if (game.getStatus() == Game.Status.WHITE_IN_CHECK || game.getStatus() == Game.Status.BLACK_IN_CHECK){ // daca jucatorul curent e in sah
                 if (isCheckMate(game.getPlayerToMove())){ // in cazu asta playerToMove o sa fie jucatorul cu alb
@@ -32,9 +36,6 @@ public class Controller {
                     break; // daca e sah mat se iese din while (play) si se constata castigatoruu
                 }
 
-
-
-
             }
 
 
@@ -43,13 +44,33 @@ public class Controller {
 
             // TO DO => PLAY MODE
             // mai intai dam cu zaru
-            dice.rowDices();
+            dice.rollDice();
+            System.out.println(dice);
+            boardGUI.setDices(game.getPlayerToMove());
+
+
             //    boardGUI.setDices(dice, playerToMove);
-            //game.setStatus(Game.Status.WIN);//status = Game.Status.WIN; // ca sa nu intre in bucla infinita
+            //game.setStatus(Game.Status.WIN);
+            // status = Game.Status.WIN; // ca sa nu intre in bucla infinita
 
             System.out.println("Tura : " + rowCounter + " muta " + game.getPlayerToMove().getName());
+
+
+
+
             rowCounter++;
+            /*
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+             */
         }
+
+
+        //System.out.println(rowCounter);
+        //System.out.println("finnal");
         // TO DO => anunta castigatorul
 
         /*
