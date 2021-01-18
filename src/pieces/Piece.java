@@ -6,7 +6,7 @@ import board.Tile;
 
 import java.util.ArrayList;
 
-public abstract class Piece {
+public abstract class Piece implements Comparable{
 
     public boolean white;
     public boolean alive = true;
@@ -21,5 +21,12 @@ public abstract class Piece {
 
     public abstract ArrayList<Move> generateValidMoves(Game game, Tile clickedTile);
     public abstract String getType();
+    public abstract int getValue();
+    public abstract ArrayList<Tile> getPossibleVulnerableTiles(Game game, Tile clickedTile);
 
+    @Override
+    public int compareTo(Object o) {
+        Piece comparedPiece = (Piece) o;
+        return this.getValue() - comparedPiece.getValue();
+    }
 }

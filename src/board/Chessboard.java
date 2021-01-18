@@ -144,13 +144,18 @@ public class Chessboard {
 
     @Override
     public String toString() {
-        String result = "";
+        String result = "  /";
         for (int i = 0; i < 8; i++){
-            result += "|";
+            result += String.format("%-3s/ ", i);
+        }
+        result += '\n';
+        for (int i = 0; i < 8; i++){
+            result += i + " |";
             for (int j = 0; j < 8; j++){
                 result += (board[i][j] + " ");
             }
             result += '\n';
+            result += "--";
             for (int k = 0; k < 8; k++){
                 result += "-----";
             }
@@ -189,6 +194,8 @@ public class Chessboard {
         this.getBoard()[removeX][removeY].setPiece(null);
 
     }
+
+
 
 
     //////////////////////////////////////////////// LOGIC STUFF

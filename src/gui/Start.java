@@ -85,7 +85,8 @@ public class Start {
 
                 //Game game = new Game(humanPlayerName);
                 Board boardFrame = new Board(humanPlayerName);
-                boardFrame.play();
+
+                //boardFrame.play();
                 //Controller controller = new Controller(game, boardFrame);
 
                 //controller.play();

@@ -36,8 +36,8 @@ public class Game {
         //this.boardGUI = boardGUI;
         chessboard = new Chessboard();
 
-        ArrayList<Move> whiteStandardLegalMoves = generateAllValidMoves(chessboard.getWhitePieces());
-        ArrayList<Move> blackStandardLegalMoves = generateAllValidMoves(chessboard.getBlackPieces());
+        //ArrayList<Move> whiteStandardLegalMoves = generateAllValidMoves(chessboard.getWhitePieces());
+        //ArrayList<Move> blackStandardLegalMoves = generateAllValidMoves(chessboard.getBlackPieces());
 
         //humanPlayer = new HumanPlayer(this, whiteStandardLegalMoves, blackStandardLegalMoves);
         //computerPlayer = new ComputerPlayer(this, whiteStandardLegalMoves, blackStandardLegalMoves);
@@ -95,7 +95,7 @@ public class Game {
 
 
     // valid moves for printing.
-    public void showValidMoves (Tile clickedTile) {
+    public ArrayList<Move> showValidMoves (Tile clickedTile) {
         ArrayList<Move> validMoves = this.generateValidMoves(clickedTile);
         Chessboard copyChessboard = new Chessboard(this.chessboard.getBoard()); // copy the chessboard to print valid moves
         // reset the valid moves
@@ -112,7 +112,7 @@ public class Game {
             copyChessboard.getBoard()[tileCoordX][tileCoordY].setForValidMove(true);
         }
         System.out.println(copyChessboard);
-
+        return validMoves;
     }
 
     public void showAllValidMoves (ArrayList<Piece> pieces){
@@ -126,7 +126,7 @@ public class Game {
     }
 
     // generate allValidMoves
-    private Tile findTheTile (Chessboard chessboard, Piece piece){
+    public Tile findTheTile (Chessboard chessboard, Piece piece){
         for (int i = 0; i < 8; i++){
             for (int j = 0; j < 8; j++){
                 if (chessboard.getBoard()[i][j].getPiece() == piece){
@@ -150,12 +150,15 @@ public class Game {
             if (tileSpecific == null){
                 System.out.println("some bug right there ma man u know what am sayin");
             }
-            allLegalMoves.addAll(piece.generateValidMoves(this, tileSpecific));
+            else {
+                allLegalMoves.addAll(piece.generateValidMoves(this, tileSpecific));
+            }
         }
         return allLegalMoves;
     }
 
-    public void makeMove (Player player, Move move){
+
+    public void makeMove(Move move){
         madeMoves.add(move);
         Piece piece = move.getEnd().getPiece();
         if (piece != null) { // daca e o piesa e rip

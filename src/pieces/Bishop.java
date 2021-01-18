@@ -14,6 +14,8 @@ import static board.Move.*;
 public class Bishop extends Piece {
     private final String TYPE = "B";
     //private boolean white;
+    public final int VALUE = 3;
+    private ArrayList<Tile> possibleVulnerableTiles = new ArrayList<>();;
 
     public Bishop(boolean white){
         super(white);
@@ -36,8 +38,12 @@ public class Bishop extends Piece {
                 ////// NV
                 for (int i = currentX - 1, j = currentY - 1; !game.getChessboard().indexOutOfBound(i, j); i--, j--){ // NV
                     if (game.getChessboard().getBoard()[i][j].getPiece() != null){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
-                        if (game.getChessboard().getBoard()[i][j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
+                        if (game.getChessboard().getBoard()[i][j].getPiece().white != clickedTile.getPiece().white){ // daca are culoare diferita o putem captura
                             validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[i][j]) );
+                        }
+                        else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                            // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                            possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
                         }
                         break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                     }
@@ -51,6 +57,10 @@ public class Bishop extends Piece {
                         if (game.getChessboard().getBoard()[i][j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                             validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[i][j]) );
                         }
+                        else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                            // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                            possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
+                        }
                         break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                     }
                     else { // daca nu e alta piesa, inseamna ca putem muta acolo
@@ -63,6 +73,10 @@ public class Bishop extends Piece {
                         if (game.getChessboard().getBoard()[i][j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                             validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[i][j]) );
                         }
+                        else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                            // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                            possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
+                        }
                         break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                     }
                     else { // daca nu e alta piesa, inseamna ca putem muta acolo
@@ -74,6 +88,10 @@ public class Bishop extends Piece {
                     if (game.getChessboard().getBoard()[i][j].getPiece() != null){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                         if (game.getChessboard().getBoard()[i][j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                             validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[i][j]) );
+                        }
+                        else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                            // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                            possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
                         }
                         break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                     }
@@ -98,4 +116,16 @@ public class Bishop extends Piece {
         if (isWhite()) return TYPE.toUpperCase();
         else return TYPE.toLowerCase();
     }
+
+    @Override
+    public int getValue() {
+        return VALUE;
+    }
+
+    @Override
+    public ArrayList<Tile> getPossibleVulnerableTiles(Game game, Tile clickedTile) {
+        return possibleVulnerableTiles;
+    }
+
+
 }

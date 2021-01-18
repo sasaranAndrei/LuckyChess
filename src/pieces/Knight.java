@@ -10,6 +10,8 @@ import java.util.ArrayList;
 
 public class Knight extends Piece {
     private final String TYPE = "H";
+    public final int VALUE = 3;
+    private ArrayList<Tile> possibleVulnerableTiles = new ArrayList<>();;
 
     public Knight(boolean white) {
         super(white);
@@ -20,7 +22,8 @@ public class Knight extends Piece {
         ArrayList<Move> validMoves = new ArrayList<>();
         int currentX = clickedTile.getCoordX(); // luam coord
         int currentY = clickedTile.getCoordY(); // curente [ca de mutat oricum muta :)) ]
-        if (game.getPlayerToMove() == game.getHumanPlayer()) { // white moves [testam pentru ca utilizatoru sa nu apese pe piese inamicului pe tura inamicului
+        if (game.getPlayerToMove() == game.getHumanPlayer()
+                || game.getPlayerToMove() == game.getComputerPlayer()) { // white moves [testam pentru ca utilizatoru sa nu apese pe piese inamicului pe tura inamicului
 
             if (game.getStatus() == Game.Status.WHITE_IN_CHECK) { // daca e in sah -> genereaza mutarile care ar stopa sahul
                 // urmeaza a fii implementat
@@ -36,6 +39,10 @@ public class Knight extends Piece {
                             if (game.getChessboard().getBoard()[currentX - i][currentY - j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                                 validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[currentX - i][currentY - j]) );
                             }
+                            else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                                // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                                possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
+                            }
                             //break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                         } else { // daca nu e alta piesa, inseamna ca putem muta acolo
                             validMoves.add(new Move.BasicMove(game.getPlayerToMove(), game.getChessboard(), clickedTile, game.getChessboard().getBoard()[currentX - i][currentY - j]));
@@ -46,6 +53,10 @@ public class Knight extends Piece {
                         if (game.getChessboard().getBoard()[currentX - i][currentY + j].getPiece() != null) { // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                             if (game.getChessboard().getBoard()[currentX - i][currentY + j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                                 validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[currentX - i][currentY + j]) );
+                            }
+                            else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                                // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                                possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
                             }
                             //break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                         } else { // daca nu e alta piesa, inseamna ca putem muta acolo
@@ -58,6 +69,10 @@ public class Knight extends Piece {
                             if (game.getChessboard().getBoard()[currentX + i][currentY - j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                                 validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[currentX + i][currentY - j]) );
                             }
+                            else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                                // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                                possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
+                            }
                             //break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                         } else { // daca nu e alta piesa, inseamna ca putem muta acolo
                             validMoves.add(new Move.BasicMove(game.getPlayerToMove(), game.getChessboard(), clickedTile, game.getChessboard().getBoard()[currentX + i][currentY - j]));
@@ -68,6 +83,10 @@ public class Knight extends Piece {
                         if (game.getChessboard().getBoard()[currentX + i][currentY + j].getPiece() != null) { // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                             if (game.getChessboard().getBoard()[currentX + i][currentY + j].getPiece().white != clickedTile.getPiece().white){ // daca am dat de o piesa -> ori o capturam / ori nu putem muta peste ea
                                 validMoves.add(new Move.AttackMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[currentX + i][currentY + j]) );
+                            }
+                            else { // daca au aceeasi culoare inseamna ca tura viitoare o poate apara
+                                // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
+                                possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
                             }
                             //break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                         } else { // daca nu e alta piesa, inseamna ca putem muta acolo
@@ -85,5 +104,15 @@ public class Knight extends Piece {
     public String getType() {
         if (isWhite()) return TYPE.toUpperCase();
         else return TYPE.toLowerCase();
+    }
+
+    @Override
+    public int getValue() {
+        return VALUE;
+    }
+
+    @Override
+    public ArrayList<Tile> getPossibleVulnerableTiles(Game game, Tile clickedTile) {
+        return possibleVulnerableTiles;
     }
 }

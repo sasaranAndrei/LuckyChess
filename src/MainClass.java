@@ -1,5 +1,6 @@
 import board.Chessboard;
 import board.Game;
+import board.HumanPlayer;
 import board.Tile;
 import gui.Board;
 import gui.Start;
@@ -7,9 +8,21 @@ import pieces.*;
 
 public class MainClass {
     public static void main(String[] args) {
-        Start startGUI = new Start();
+        //Start startGUI = new Start();
+
+
+        String humanPlayerName = "sosy";
+
+        Board boardFrame = new Board(humanPlayerName);
+
+
+        boardFrame.play();
+
+        /*
+         */
 
         //Board board = new Board("s");
+
         //Game game = boardGUI.getGame();
 
         //System.out.println(game.getChessboard());
