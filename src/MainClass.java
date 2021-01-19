@@ -14,9 +14,9 @@ public class MainClass {
         String humanPlayerName = "sosy";
 
         Board boardFrame = new Board(humanPlayerName);
+        //boardFrame.playInterface();
 
-
-        boardFrame.play();
+        //boardFrame.play();
 
         /*
          */

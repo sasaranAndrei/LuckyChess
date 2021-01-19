@@ -170,6 +170,131 @@ public class Game {
         chessboard.removePieceFromTile(move.getStart());
     }
 
+    /*
+    while (rowCounter < 20 && game.getStatus() == Game.Status.PLAY ||  // cat timp inca se poate juca
+            game.getStatus() == Game.Status.WHITE_IN_CHECK || game.getStatus() == Game.Status.BLACK_IN_CHECK){
+
+
+
+        if (game.getStatus() == Game.Status.WHITE_IN_CHECK || game.getStatus() == Game.Status.BLACK_IN_CHECK){ // daca jucatorul curent e in sah
+            if (isCheckMate(game.getPlayerToMove())){ // in cazu asta playerToMove o sa fie jucatorul cu alb
+                if (game.getPlayerToMove() == game.getHumanPlayer()){ // daca omu si o luat sah mat
+                    game.setWinner(game.getComputerPlayer());// = computerPlayer;
+                }
+                else { // daca calculatorul si a luat sah mat
+                    game.setWinner(game.getHumanPlayer());
+                }
+                game.setStatus(Game.Status.WIN);//status = Game.Status.WIN;
+                break; // daca e sah mat se iese din while (play) si se constata castigatoruu
+            }
+
+        }
+
+
+        if (rowCounter % 2 == 0) game.setPlayerToMove(game.getHumanPlayer());
+        else game.setPlayerToMove(game.getComputerPlayer());
+
+        // TO DO => PLAY MODE
+        // mai intai dam cu zaru
+        dice.rollDice();
+        System.out.println(dice);
+        //this.setDices(game.getPlayerToMove());
+
+
+        //    boardGUI.setDices(dice, playerToMove);
+        //game.setStatus(Game.Status.WIN);
+        // status = Game.Status.WIN; // ca sa nu intre in bucla infinita
+
+        System.out.println("Tura : " + rowCounter + " muta " + game.getPlayerToMove().getName());
+        if (game.getPlayerToMove().isHuman()){
+            // citim comanda utilizatorului
+            boolean makeMoveFlag = false;
+            System.out.println(game.getChessboard().toString());
+            while (makeMoveFlag == false){
+                Command command = new Command(scanner);
+                ArrayList<Move> validMoves = null;
+                if (command.isShowCommand()){
+                    int showX = command.startX;
+                    int showY = command.endX;
+                    //System.out.println("SHOW " + showX + " " + showY);
+                    Tile showTile = game.getChessboard().getBoard()[showX][showY];
+
+                    validMoves = game.showValidMoves(showTile);
+                    if (validMoves != null){
+                        System.out.println("COPY and PASTE one of this:");
+                        for (Move validMove : validMoves){
+                            System.out.println("move " + validMove.getStart().getCoordX() + " " + validMove.getStart().getCoordY() + " " + validMove.getEnd().getCoordX() + " " + validMove.getEnd().getCoordY());
+                        }
+                    }
+
+
+                }
+                else { // ar trebui command, dar testam
+                    if (command.isMoveCommand()){
+                        int sourceX = command.startX;
+                        int sourceY = command.endX;
+                        int destX = command.startY;
+                        int destY = command.endY;
+                        Tile sourceTile = game.getChessboard().getBoard()[sourceX][sourceY];
+                        Tile destinationTile = game.getChessboard().getBoard()[destX][destY];
+                        //System.out.println("MOVE " + sourceX + " " + sourceY + " " + destX + " " + destY);
+                        // make move cum zice baiatu
+                        Move moveToMake = null;
+                        // daca nu o facut baiatu show inainte
+                        validMoves = game.generateValidMoves(sourceTile);
+                        for (Move validMove : validMoves){
+                            if (validMove.getEnd() == destinationTile){
+                                moveToMake = validMove;
+                                break;
+                            }
+                        }
+                        for (Move validMove : validMoves){
+                            Tile markedTile = validMove.getEnd(); // let s unMark the valid move on the chessboard
+                            int tileCoordX = markedTile.getCoordX();
+                            int tileCoordY = markedTile.getCoordY();
+                            game.getChessboard().getBoard()[tileCoordX][tileCoordY].setForValidMove(false);
+                        }
+                        game.makeMove(moveToMake);
+                        makeMoveFlag = true;
+                        lastHumanMoveMade = moveToMake;
+
+                    }
+                }
+            }
+
+
+        }
+        else { // daca nu i uman
+            System.out.println(game.getChessboard().toString());
+
+            ArrayList<Piece> computerPieces = null;
+
+            //if (switchSides % 2 == 0){ // computer = black
+            computerPieces = game.getChessboard().storePieces(false);
+            //}
+            //else {
+            //    computerPieces = game.getChessboard().storePieces(true);
+            //}
+            ArrayList<Move> validMoves = game.generateAllValidMoves(computerPieces);
+            Move moveToMake = newPickTheBestMove(validMoves, lastHumanMoveMade);
+            System.out.println("move to be made");
+            System.out.println(moveToMake);
+            game.makeMove(moveToMake);
+
+            lastComputerMoveMade = moveToMake;
+        }
+
+
+
+
+
+
+
+        rowCounter++;
+
+    }
+    */
+
 
 
 
