@@ -85,7 +85,7 @@ public class Board{
         loadPieceIcons();
 
         ///////////this.mainFrame.setVisible(false);
-        this.mainFrame.setVisible(false);
+        //this.mainFrame.setVisible(false);
 
     }
 
@@ -221,6 +221,27 @@ public class Board{
             setPreferredSize(BOARD_PANEL_DIMENSION);
             validate();
         }
+
+        private void drawBoard (Game game){
+            this.removeAll();
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    tileBoard[i][j].drawTile(game);
+                    add(tileBoard[i][j]);
+                }
+            }
+            this.validate();
+            this.repaint();
+        }
+
+        private void unHighlightTiles (){
+            for (int i = 0; i < 8; i++){
+                for (int j = 0; j < 8; j++){
+                    tileBoard[i][j].unHighlight();
+                }
+            }
+        }
+
     }
 
     private class TilePanel extends JPanel{
@@ -242,9 +263,10 @@ public class Board{
                 public void mouseClicked(MouseEvent e) {
                     if (isLeftMouseButton(e)){ // select a move
                         if (startTile == null){ // first click => startTile
-                            System.out.println("start");
+
                             startTile = game.getChessboard().getBoard()[coordX][coordY];
                             humanMovedPiece = startTile.getPiece();
+
                             if (humanMovedPiece == null){ // daca o selectat o patratica care nu i buna
                                 startTile = null; // resetam patratica aleasa
                             }
@@ -256,50 +278,38 @@ public class Board{
                                 highlightTiles(validEndTiles);
                             }
                         } else { // second click => endTile
-                            System.out.println("end");
-                            System.out.println(validEndTiles);
                             endTile = game.getChessboard().getBoard()[coordX][coordY];
-
-                            System.out.println(endTile);
 
                             if (itWasClickedAnEndTile(endTile)){
                                 for (Move validMove : validMoves){
                                     if (endTile == validMove.getEnd()){
-                                        System.out.println("make move");
-
                                         game.makeMove(validMove);
+                                        //setPieceIcon(game);
 
-                                        System.out.println(game.getChessboard());
-                                        setPieceIcon(game);
                                     }
                                 }
                             }
                             else endTile = null;
-
-
-
-                            /*
-                            endTile = game.getChessboard().getBoard()[coordX][coordY];
-                            Piece pieceFromEndTile = endTile.getPiece();
-                            if (pieceFromEndTile == null){
-
-                            }
-                            if (pieceFromEndTile.isWhite() == humanMovedPiece.isWhite()){ // daca piesele au aceeasi culoare, nu se poate
-                                endTile = null;
-                            }
-                            else {
-
-                            }
-
-                             */
-                            //MoveTransition moveTransition = game.getPlayerToMove().makeMove(move);
-
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    boardPanel.drawBoard(game);
+                                }
+                            });
                         }
 
 
+
                     } else if (isRightMouseButton(e)){ // deselect
-                        //unHighlightTiles();
+                        boardPanel.unHighlightTiles();
+                        startTile = null;
+                        endTile = null;
+                        validEndTiles.clear();
+                        validMoves.clear();
                     }
+
+
+
                 }
 
                 @Override
@@ -330,7 +340,6 @@ public class Board{
         private boolean itWasClickedAnEndTile (Tile clickedTile){
             for (Tile validTile : validEndTiles){
                 if (clickedTile == validTile){
-                    System.out.println("it was");
                     return true;
                 }
             }
@@ -396,15 +405,15 @@ public class Board{
         }
 
 
-    }
-
-    private void unHighlightTiles (){
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
-                //unHighlight();
-            }
+        public void drawTile(Game game) {
+            this.setTileColor();
+            this.setPieceIcon(game);
+            this.validate();
+            this.repaint();
         }
     }
+
+
 
     public void highlightTiles (ArrayList<Tile> tiles){
         for (Tile tile : tiles){
@@ -418,6 +427,7 @@ public class Board{
     int rowCounter = 0;
     //int switchSides = 0;
 
+    /// this is for the console version
     public void play (){
         Scanner scanner = new Scanner(System.in);
         //System.out.println(game.getChessboard().toString());
@@ -900,7 +910,7 @@ public class Board{
 
         return bestPick;
     }
-
+    /// this is for the console version
 
     private boolean isCheckMate(Player playerToMove) {
         return false;
