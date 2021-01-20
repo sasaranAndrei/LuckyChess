@@ -25,14 +25,22 @@ public class Dice {
     private int secondDice = 1;
     private String rule = rules[2];
 
+    private static int[] firstDiceTest = {1, 1, 1, 1};
+    private static int[] secondDiceTest = {2, 1, 2, 1};
+    private static int testCounter = 0;
+
     public void rollDice (){
         firstDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
         secondDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
 
         // here we force the dices
-        firstDice = 3;
-        secondDice = 6;
-
+        //firstDice = 1;
+        //secondDice = 2;
+        if (testCounter < 4){
+            firstDice = firstDiceTest[testCounter];
+            secondDice = secondDiceTest[testCounter];
+            testCounter++;
+        }
 
         rule = rules[firstDice + secondDice];
 

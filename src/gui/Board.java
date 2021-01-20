@@ -4,7 +4,6 @@ import board.*;
 import console.Command;
 import pieces.*;
 
-import javax.accessibility.Accessible;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -170,6 +169,10 @@ public class Board implements MouseListener {
     boolean humanIsWhite = true;    // human = WHITE & computer = BLACK if true
                                     // human = BLACK & computer = WHITE if false
     /// rule 3 / 11
+    int counterForRuleNo3 = 0;
+//    Dimension lastWhiteQueen = new Dimension(-1, -1); // folosim dimension pt a sttoca
+//    Dimension lastBlackQueen = new Dimension(-1, -1); // 2 coordonate
+    Piece whiteQueen, blackQueen; // references to the queens.
     int lastWhiteQueenX = -1; // uninitialize
     int lastWhiteQueenY = -1; // uninitialize
     int lastBlackQueenX = -1; // uninitialize
@@ -205,8 +208,10 @@ public class Board implements MouseListener {
 
                     int diceRuleIndex = dice.getFirstDice() + dice.getSecondDice();
                     manangeRules(game.getHumanPlayer(), diceRuleIndex);
-
                     humanClickedOnRoll = true;
+
+                    //System.out.println(humanHasMoved);
+
                 }
             }
 
@@ -216,12 +221,15 @@ public class Board implements MouseListener {
                 for (int i = 0; i < 8; i++){
                     for (int j = 0; j < 8; j++){
                         if (e.getSource() == boardPanel.tileBoard[i][j]){ // daca o fost apasat acest tilePanel
+
                             TilePanel tilePanel = boardPanel.tileBoard[i][j];
                             //System.out.println("cine muta " + game.getPlayerToMove().getName());
+
 
                             if (game.getPlayerToMove().isHuman()){ // muta omul
                                 if (isLeftMouseButton(e)) { // select a move
                                     if (startTile == null) { // first click => startTile
+                                        System.out.println("u here????? first click");
 
                                         startTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
                                         humanMovedPiece = startTile.getPiece();
@@ -230,20 +238,27 @@ public class Board implements MouseListener {
                                             startTile = null; // resetam patratica aleasa
 
                                         } else { // afisam mutarile bune posibile
-                                            validMoves = game.generateValidMoves(startTile);
+                                            validMoves = game.generateValidMoves(startTile, humanIsWhite);
                                             for (Move move : validMoves) {
                                                 validEndTiles.add(move.getEnd());
                                             }
                                             highlightTiles(validEndTiles);
                                         }
                                     }
-                                    else{ // second click => endTile
+                                    else{
+
+                                        System.out.println(startTile.getCoordinates());
+                                        // second click => endTile
                                         endTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
 
                                         if (tilePanel.itWasClickedAnEndTile(endTile)) {
 
                                             for (Move validMove : validMoves) {
                                                 if (endTile == validMove.getEnd()) { // computerTurn.
+
+                                                    System.out.println(endTile.getCoordinates());
+                                                    System.out.println(validMove);
+
                                                     game.makeMove(validMove);
                                                     // he made a valid move so....
 
@@ -425,7 +440,7 @@ public class Board implements MouseListener {
                 }
             }
             else if (! computerHasMoved){
-                ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(false));
+                ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(false), humanIsWhite);
                 Random random = new Random();
                 Move bestPick = pcValidMoves.get(random.nextInt(pcValidMoves.size()));
                 //// end of the complex algoritm... ;)))
@@ -465,11 +480,21 @@ public class Board implements MouseListener {
                 case 2 :
                 case 12 : {
                     switchSides();
+                    rotateQueens(); // coordinates for rule no 3/11
                     break;
                 }
                 // rule 3 / 11
                 case 3 :
                 case 11 : {
+                    if (counterForRuleNo3 % 2 == 0){ // dispar reginele
+                        findLastQueens();
+                        hideQueens();
+
+                    }
+                    else { // apar reginele
+                        showQueens();
+                    }
+                    counterForRuleNo3++;
                     break;
                 }
                 // rule 4 / 10
@@ -503,6 +528,8 @@ public class Board implements MouseListener {
                 // rule 2 / 12
                 case 2 :
                 case 12 : {
+                    switchSides();
+                    rotateQueens(); // coordinates for rule no 3/11
                     break;
                 }
                 // rule 3 / 11
@@ -538,8 +565,87 @@ public class Board implements MouseListener {
         }
     }
 
+    //TODO when the board is rotating we have to rotate this positions too
+    private void rotateQueens(){
+        // white queen
+        lastWhiteQueenX = 7 - lastWhiteQueenX;
+        lastWhiteQueenY = 7 - lastWhiteQueenY;
+        // black queen
+        lastBlackQueenX = 7 - lastBlackQueenX;
+        lastBlackQueenY = 7 - lastBlackQueenY;
+    }
+
+    private void showQueens() {
+        if (lastWhiteQueenX != -1) game.getChessboard().getBoard()[lastWhiteQueenX][lastWhiteQueenY].setPiece(whiteQueen);
+        if (lastBlackQueenX != -1) game.getChessboard().getBoard()[lastBlackQueenX][lastBlackQueenY].setPiece(blackQueen);
+        boardPanel.drawBoard(game);
+    }
+
+    private void hideQueens() {
+        if (lastWhiteQueenX != -1){ // daca regina alba NU a fost capturata
+
+            if (lastBlackQueenX != -1){ // daca ambele regine NU au fost capturate
+                // atunci le facem sa dispara pe ambele
+                // save pointers
+                whiteQueen = game.getChessboard().getBoard()[lastWhiteQueenX][lastWhiteQueenY].getPiece();
+                blackQueen = game.getChessboard().getBoard()[lastBlackQueenX][lastBlackQueenY].getPiece();
+                // erase from board
+                game.getChessboard().getBoard()[lastWhiteQueenX][lastWhiteQueenY].setPiece(null);
+                game.getChessboard().getBoard()[lastBlackQueenX][lastBlackQueenY].setPiece(null);
+            }
+            else { // daca doar regina neagra a fost caputarata
+                // o facem pe cea alba sa dispara
+                // save pointer
+                whiteQueen = game.getChessboard().getBoard()[lastWhiteQueenX][lastWhiteQueenY].getPiece();
+                // erase from board
+                game.getChessboard().getBoard()[lastWhiteQueenX][lastWhiteQueenY].setPiece(null);
+            }
+
+        }
+        else { // daca regina alba a fost capturata
+
+            if (lastBlackQueenX != -1){ // dar regina neagra NU au fost capturata
+                // o facem pe cea neagra sa dispara
+                // save pointer
+                blackQueen = game.getChessboard().getBoard()[lastBlackQueenX][lastBlackQueenY].getPiece();
+                // erase from board
+                game.getChessboard().getBoard()[lastBlackQueenX][lastBlackQueenY].setPiece(null);
+            }
+            // daca ambele au fost caputarate... nu se intampla nimic
+        }
+        boardPanel.drawBoard(game);
+    }
+
+    private void findLastQueens() {
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                Piece piece = game.getChessboard().getBoard()[i][j].getPiece();
+                if (piece != null){
+                    // regina alba
+                    if (piece.getType().equals("Q")){
+                        lastWhiteQueenX = i;
+                        lastWhiteQueenY = j;
+                    }
+                    // regina neagra
+                else if (piece.getType().equals("q")){
+                        lastBlackQueenX = i;
+                        lastBlackQueenY = j;
+                    }
+                }
+
+            }
+        }
+    }
+
     private void switchSides() {
         // deocamdata facem redraw si dupa vedem ce chestii de logica mai tre sa implementam.
+        // ca nu stiu exact unde i duma cu alb = human
+        //TODO ce scrie mai sus
+        game.switchSides();
+        System.out.println(game.getChessboard());
+        humanIsWhite = !humanIsWhite; // daca era alb -> negru, si invers
+        boardPanel.drawBoard(game);
+
     }
 
     public void clickOnComputerPanel () {
@@ -560,6 +666,8 @@ public class Board implements MouseListener {
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
     }
 
+
+    /*
     public void computerTurn (){
         // daca e computerPlayer
         // asteptam sa treaca o secunda.
@@ -591,7 +699,9 @@ public class Board implements MouseListener {
         game.setPlayerToMove(game.getHumanPlayer());
         ///// afisam utilizatorului roll dices
         ((HumanPanel) humanPanel).drawRollDices();
+
     }
+    */
 
 
     //////////////////////VVVV///////////////////////
@@ -1085,7 +1195,7 @@ public class Board implements MouseListener {
             }
             else { //if (! game.getPlayerToMove().isHuman()){ // calculatoru muta
                 // ii luam piesele si generam mutarile posibile
-                ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(false));
+                ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(false), true);
                 Random random = new Random();
                 Move bestPick = pcValidMoves.get(random.nextInt(pcValidMoves.size()));
 
@@ -1117,7 +1227,7 @@ public class Board implements MouseListener {
 
 
     //int switchSides = 0;
-
+    /*
     /// this is for the console version
     public void playConsole (){
         Scanner scanner = new Scanner(System.in);
@@ -1197,7 +1307,7 @@ public class Board implements MouseListener {
                             // make move cum zice baiatu
                             Move moveToMake = null;
                             // daca nu o facut baiatu show inainte
-                            validMoves = game.generateValidMoves(sourceTile);
+                            validMoves = game.generateValidMoves(sourceTile, humanIsWhite);
                             for (Move validMove : validMoves){
                                 if (validMove.getEnd() == destinationTile){
                                     moveToMake = validMove;
@@ -1255,7 +1365,7 @@ public class Board implements MouseListener {
         //System.out.println("finnal");
         // TO DO => anunta castigatorul
 
-        /*
+
         System.out.println("here");
         if (game == null){
             System.out.println("game pl");
@@ -1263,9 +1373,9 @@ public class Board implements MouseListener {
         if (boardGUI == null){
             System.out.println("boardgui pl");
         }
-        */
-    }
 
+    }
+*/
     private Move newPickTheBestMove (ArrayList<Move> validMoves, Move lastHumanMoveMade){
         HashSet<Piece> vulnerablePiecesSet = new HashSet<>();
         HashSet<Tile> vulnerableTiles = this.findVulnerableTiles(lastHumanMoveMade);
@@ -1332,7 +1442,7 @@ public class Board implements MouseListener {
             bestValueOfBasicMove = mostVulnerablePieceNow.getValue();
 
             Tile tileOfIt = game.findTheTile(game.getChessboard(), mostVulnerablePieceNow);
-            ArrayList<Move> possibleMovesForIt = game.generateValidMoves(tileOfIt);
+            ArrayList<Move> possibleMovesForIt = game.generateValidMoves(tileOfIt, humanIsWhite);
             for (Move mustMove : possibleMovesForIt){
                 boolean canMoveThere = findIfCanMove(mustMove, vulnerableTiles);
                 if (canMoveThere){
@@ -1342,11 +1452,11 @@ public class Board implements MouseListener {
             }
             //bestValueOfBasicMove = -10; // daca am ajuns aici inseamna ca piesa aia ii rip deci alegem bestAttackMove
         }
-        /*
+
         else { // daca nu avem piese vulnerabile atacam
             bestPick = bestAttackMove;
         }
-         */
+
         System.out.println("Best Attack Move : " + bestValueOfAttackMove + " " + bestAttackMove);
         System.out.println("Best Basic Move : " + bestValueOfBasicMove + " " + bestBasicMove);
 
@@ -1404,7 +1514,7 @@ public class Board implements MouseListener {
         //// tre sa impartim intre pawn si notPawn pentru ca
         //// inafara de pawn, toate piesele captureaza la fel ca si cum muta
 
-        /*
+        //
         ArrayList<Tile> pawnsTiles = new ArrayList<>();
         ArrayList<Piece> nonPawns = new ArrayList<>();
 
@@ -1417,9 +1527,9 @@ public class Board implements MouseListener {
             }
         }
 
-         */
 
-        ArrayList<Move> validOpponentMoves = game.generateAllValidMoves(opponentPieces);
+
+        ArrayList<Move> validOpponentMoves = game.generateAllValidMoves(opponentPieces, true); // deocamdata
         for (Move opponentMove : validOpponentMoves){
             vulnerableTiles.add(opponentMove.getEnd());  // adaugam pozitile unde poate muta tura asta
             // si pozitiile unde poate muta tura viitoare
@@ -1478,7 +1588,8 @@ public class Board implements MouseListener {
 
         return vulnerableTiles;
     }
-
+    // alea de mai sus is bune
+    /*
     private Move pickTheBestMove(ArrayList<Move> validMoves) {
         Move bestAttackPick = null;
         int maxValue = 0;
@@ -1602,6 +1713,9 @@ public class Board implements MouseListener {
         return bestPick;
     }
     /// this is for the console version
+
+
+     */
 
     private boolean isCheckMate(Player playerToMove) {
         return false;

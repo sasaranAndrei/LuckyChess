@@ -18,18 +18,10 @@ public class Knight extends Piece {
     }
 
     @Override
-    public ArrayList<Move> generateValidMoves(Game game, Tile clickedTile) {
+    public ArrayList<Move> generateValidMoves(Game game, Tile clickedTile, boolean humanIsWhite) {
         ArrayList<Move> validMoves = new ArrayList<>();
         int currentX = clickedTile.getCoordX(); // luam coord
         int currentY = clickedTile.getCoordY(); // curente [ca de mutat oricum muta :)) ]
-        if (game.getPlayerToMove() == game.getHumanPlayer()
-                || game.getPlayerToMove() == game.getComputerPlayer()) { // white moves [testam pentru ca utilizatoru sa nu apese pe piese inamicului pe tura inamicului
-
-            if (game.getStatus() == Game.Status.WHITE_IN_CHECK) { // daca e in sah -> genereaza mutarile care ar stopa sahul
-                // urmeaza a fii implementat
-                return null;
-            } else { // daca muta 'liber'
-                // si mergem pe toate pozitiile de L posibile facut de KNIGHT ca sa gasim mutarile valide
 
                 for (int i = 1; i <= 2; i++) {
                     int j = 3 - i;
@@ -95,8 +87,6 @@ public class Knight extends Piece {
                     }
 
                 }
-            }
-        }
         return validMoves;
     }
 

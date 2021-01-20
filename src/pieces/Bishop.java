@@ -22,7 +22,7 @@ public class Bishop extends Piece {
     }
 
     @Override
-    public ArrayList<Move> generateValidMoves(Game game, Tile clickedTile) {
+    public ArrayList<Move> generateValidMoves(Game game, Tile clickedTile, boolean humanIsWhite) {
         ArrayList<Move> validMoves = new ArrayList<>();
         int currentX = clickedTile.getCoordX(); // luam coord
         int currentY = clickedTile.getCoordY(); // curente [ca de mutat oricum muta :)) ]

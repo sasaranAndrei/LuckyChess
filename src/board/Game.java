@@ -6,8 +6,7 @@ import gui.Board;
 import pieces.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 public class Game {
     private Player humanPlayer;
@@ -22,6 +21,35 @@ public class Game {
     private ArrayList<Piece> capturedPieces = new ArrayList<>();
     private ArrayList<Move> madeMoves = new ArrayList<>();
     private Status status = Status.PLAY;
+
+    public void switchSides() {
+        Tile[][] board = chessboard.getBoard();
+        // (i,j) <- (7-i, 7-j)
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 8; j++){
+                Piece firstPiece = board[i][j].getPiece();
+                Piece secondPiece = board[7 - i][7 - j].getPiece();
+
+                //System.out.println("BeforE:");
+                //if (firstPiece != null && secondPiece != null)
+                //System.out.println(firstPiece.getType() + " <->" + secondPiece.getType());
+
+                chessboard.removePieceFromTile(board[i][j]);
+                chessboard.removePieceFromTile(board[7 - i][7 - j]);
+
+                chessboard.getBoard()[i][j].setPiece(secondPiece);
+                chessboard.getBoard()[7 - i][7 - j].setPiece(firstPiece);
+
+//                System.out.println("After:");
+//                firstPiece = board[i][j].getPiece();
+//                secondPiece = board[7 - i][7 - j].getPiece();
+//                if (firstPiece != null && secondPiece != null)
+//                    System.out.println(firstPiece.getType() + " <->" + secondPiece.getType());
+
+            }
+        }
+        //System.out.println(chessboard);
+    }
 
     public enum Status {
         PLAY,
@@ -95,8 +123,8 @@ public class Game {
 
 
     // valid moves for printing.
-    public ArrayList<Move> showValidMoves (Tile clickedTile) {
-        ArrayList<Move> validMoves = this.generateValidMoves(clickedTile);
+    public ArrayList<Move> showValidMoves (Tile clickedTile, boolean humanIsWhite) {
+        ArrayList<Move> validMoves = this.generateValidMoves(clickedTile, humanIsWhite);
         Chessboard copyChessboard = new Chessboard(this.chessboard.getBoard()); // copy the chessboard to print valid moves
         // reset the valid moves
         for (int i = 0; i < 8; i++){
@@ -115,13 +143,13 @@ public class Game {
         return validMoves;
     }
 
-    public void showAllValidMoves (ArrayList<Piece> pieces){
+    public void showAllValidMoves (ArrayList<Piece> pieces, Boolean humanIsWhite){
         for (Piece piece : pieces) {
             Tile tileSpecific = findTheTile(chessboard, piece);
             if (tileSpecific == null) {
                 System.out.println("some bug right there ma man u know what am sayin");
             }
-            this.showValidMoves(tileSpecific);
+            this.showValidMoves(tileSpecific, humanIsWhite);
         }
     }
 
@@ -138,12 +166,18 @@ public class Game {
     }
 
     //arg = a tile from where it will be computed the valid moves for the piece on that tile
-    public ArrayList<Move> generateValidMoves(Tile tileClicked){
+    public ArrayList<Move> generateValidMoves(Tile tileClicked, boolean humanIsWhite){
         Piece currentPiece = tileClicked.getPiece();
-        return currentPiece.generateValidMoves(this, tileClicked);
+        ArrayList<Move> moves = new ArrayList<>();
+        if (currentPiece != null){
+            if ((currentPiece.isWhite() && humanIsWhite) || (!currentPiece.isWhite() && !humanIsWhite)){
+                moves = currentPiece.generateValidMoves(this, tileClicked, humanIsWhite);
+            }
+        }
+        return moves;
     }
 
-    public ArrayList<Move> generateAllValidMoves (ArrayList<Piece> pieces){
+    public ArrayList<Move> generateAllValidMoves (ArrayList<Piece> pieces, Boolean humanIsWhite){
         ArrayList<Move> allLegalMoves = new ArrayList<>();
         for (Piece piece : pieces){
             Tile tileSpecific = findTheTile(chessboard, piece);
@@ -151,7 +185,7 @@ public class Game {
                 System.out.println("some bug right there ma man u know what am sayin");
             }
             else {
-                allLegalMoves.addAll(piece.generateValidMoves(this, tileSpecific));
+                allLegalMoves.addAll(piece.generateValidMoves(this, tileSpecific, humanIsWhite));
             }
         }
         return allLegalMoves;

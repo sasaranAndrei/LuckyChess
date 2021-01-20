@@ -18,18 +18,10 @@ public class King extends Piece {
     }
 
     @Override
-    public ArrayList<Move> generateValidMoves(Game game, Tile clickedTile) {
+    public ArrayList<Move> generateValidMoves(Game game, Tile clickedTile, boolean humanIsWhite) {
         ArrayList<Move> validMoves = new ArrayList<>();
         int currentX = clickedTile.getCoordX(); // luam coord
         int currentY = clickedTile.getCoordY(); // curente [ca de mutat oricum muta :)) ]
-        if (game.getPlayerToMove() == game.getHumanPlayer()
-                || game.getPlayerToMove() == game.getComputerPlayer()) { // white moves [testam pentru ca utilizatoru sa nu apese pe piese inamicului pe tura inamicului
-
-            if (game.getStatus() == Game.Status.WHITE_IN_CHECK) { // daca e in sah -> genereaza mutarile care ar stopa sahul
-                // urmeaza a fii implementat
-                return null;
-            }
-            else {
                 for (int i = currentX - 1; i <= currentX + 1; i++){ // parcurgem patratelu de 3x3
                     for (int j = currentY - 1; j <= currentY + 1; j++){ // (regele in centru)
                         if (!(i == currentX) || !(j == currentY)){ // am aplicat deMorgan asupra patratelui cu i = currentX si j = currentY (e imposibil sa ramana pe loc)
@@ -44,7 +36,7 @@ public class King extends Piece {
                                         // aceasta mutare este un validMove tura urmatoarea (pt logica PCului)
                                         possibleVulnerableTiles.add(game.getChessboard().getBoard()[i][j]);
                                     }
-                                    break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
+                                    //break; // dupa ce da de o piesa oprim bucla ca nu are sens sa cautam mai departe
                                 }
                                 else { // daca nu e alta piesa, inseamna ca putem muta acolo
                                     validMoves.add(new Move.BasicMove( game.getPlayerToMove() , game.getChessboard() , clickedTile , game.getChessboard().getBoard()[i][j]) );
@@ -53,9 +45,7 @@ public class King extends Piece {
                         }
 
                     }
-                }
 
-            }
         }
         return validMoves;
     }

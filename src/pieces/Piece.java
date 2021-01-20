@@ -19,7 +19,7 @@ public abstract class Piece implements Comparable{
         return white;
     }
 
-    public abstract ArrayList<Move> generateValidMoves(Game game, Tile clickedTile);
+    public abstract ArrayList<Move> generateValidMoves(Game game, Tile clickedTile, boolean humanIsWhite);
     public abstract String getType();
     public abstract int getValue();
     public abstract ArrayList<Tile> getPossibleVulnerableTiles(Game game, Tile clickedTile);
