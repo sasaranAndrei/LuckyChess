@@ -17,7 +17,7 @@ public class Dice {
         "<html> TURA POATE MERGE PE <br> DIAGONALA (DOAR TURA ASTA) </html>", // 10
         "<html> DISPAR REGINELE. URMATOAREA DATA <br> APAR PE POZITIILE UNDE AU DISPARUT </html>", // 11
         "SCHIMBA TABLA", // 12
-            // LA 5 PUNCTE MAGICE => POTI OPTA SA BLOCHEZI UN EFECT AL ADVERSARULUI
+            // LA 5 PUNCTE MAGICE => POTI OPTA SA BLOCHEZI URMATORUL EFECT AL ADVERSARULUI
             // DACA NU IESE ASA => DOAR PUNCTE IN PLUS SI AIA E
     };
 
@@ -28,7 +28,14 @@ public class Dice {
     public void rollDice (){
         firstDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
         secondDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
+
+        // here we force the dices
+        firstDice = 2;
+        secondDice = 4;
+
+
         rule = rules[firstDice + secondDice];
+
     }
 
     public int getFirstDice (){

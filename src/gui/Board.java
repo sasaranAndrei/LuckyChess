@@ -7,10 +7,7 @@ import pieces.*;
 import javax.accessibility.Accessible;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -44,16 +41,14 @@ public class Board implements MouseListener {
         private ArrayList<Tile> validEndTiles = new ArrayList<>();
         private ArrayList<Move> validMoves = new ArrayList<>();
 
-        private boolean humanHasMoved = false;
-        //private boolean
 
-
-    private Piece humanMovedPiece;
+        private Piece humanMovedPiece;
 
         private Game game;
         private Dice dice = new Dice();
 
-    private void loadIcons (){
+
+    private void loadIcons (){ // load DICE ICONS
         diceIcons.add(new ImageIcon("images/dice1.png")); // il punema ici de forma ca altfel loam eroare de index mai jos
         // LOAD ICONS
         for (int i = 1; i <= 6; i++){
@@ -68,27 +63,31 @@ public class Board implements MouseListener {
 
     public Board(String humanPlayerName) throws HeadlessException {
 
-        loadIcons();
+        loadIcons(); // dices icons
         game = new Game(humanPlayerName);
 
         this.mainFrame = new JFrame("LUCKY CHESS");
+        this.mainFrame.setResizable(false);
         this.mainFrame.setSize(700,700); // [600,600]
         this.mainFrame.setLayout(new BorderLayout());
         this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // COMPUTER PANEL
-        this.computerPanel = new ComputerPanel();
+        this.computerPanel = new ComputerPanel(this);
         this.mainFrame.add(computerPanel, BorderLayout.NORTH);
         // BOARD PANEL
         this.boardPanel = new BoardPanel(game, this);
         this.mainFrame.add(boardPanel, BorderLayout.CENTER);
         // HUMAN PANEL
-        this.humanPanel = new HumanPanel(humanPlayerName);
+        this.humanPanel = new HumanPanel(humanPlayerName, this);
         this.mainFrame.add(humanPanel, BorderLayout.SOUTH);
 
         this.mainFrame.setVisible(true);
 
         this.humanPlayerName = humanPlayerName;
+
+        ///// afisam utilizatorului roll dices
+        ((HumanPanel) humanPanel).drawRollDices();
 
         loadPieceIcons();
 
@@ -122,7 +121,7 @@ public class Board implements MouseListener {
         int firstDice = dice.getFirstDice();
         int secondDice = dice.getSecondDice();
 
-        if (player.isHuman() == true){
+        if (player.isHuman()){
             HumanPanel humanPanel = (HumanPanel) this.humanPanel;
             humanPanel.drawUpdated(diceIcons.get(firstDice), diceIcons.get(secondDice), dice.getRule());
                     /*
@@ -133,11 +132,16 @@ public class Board implements MouseListener {
         }
         else {
             ComputerPanel computerPanel = (ComputerPanel) this.computerPanel;
+            computerPanel.drawUpdated(diceIcons.get(firstDice), diceIcons.get(secondDice), dice.getRule());
+
+            /*
             // dices
             computerPanel.getFirstDiceLabel().setIcon(diceIcons.get(firstDice));
             computerPanel.getSecondDiceLabel().setIcon(diceIcons.get(secondDice));
             // rule
             computerPanel.getRuleDescriptionLabel().setText(dice.getRule());
+
+             */
         }
 
     }
@@ -150,102 +154,353 @@ public class Board implements MouseListener {
      */
 
     /// THATS THE LOOP FUNCTION RIGHT THERE (I GUESS)
+    boolean humanClickedOnRoll = false;
+    boolean humanHasMoved = false;
+
+    boolean computerClickedOnRoll = false;
+    boolean computerHasMoved = false;
+
     int rowCounter = 0;
+
+    ///// THE DICE GAME LOGIC
+    boolean humanDiceActivated = true;
+    boolean computerDiceActivated = true;
+
+    /// rule 2 / 12
+    boolean humanIsWhite = true;    // human = WHITE & computer = BLACK if true
+                                    // human = BLACK & computer = WHITE if false
+    /// rule 3 / 11
+    int lastWhiteQueenX = -1; // uninitialize
+    int lastWhiteQueenY = -1; // uninitialize
+    int lastBlackQueenX = -1; // uninitialize
+    int lastBlackQueenY = -1; // uninitialize
+
+    /// rule 4 / 10
+    boolean rookDiagonal = false; // true cand se da 4 / 10
+
+    /// rule 5 / 9
+    boolean canSwap = false; // true cand se da 5 / 9
+
+    /// rule 6 / 8
+    int humanMagicPoints = 0;
+    int computerMagicPoints = 0;
+
     @Override
-    public void mouseClicked(MouseEvent e) {
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
-                if (e.getSource() == boardPanel.tileBoard[i][j]){ // daca o fost apasat acest tilePanel
-                    TilePanel tilePanel = boardPanel.tileBoard[i][j];
-                    System.out.println("cine muta " + game.getPlayerToMove().getName());
+    public void mouseClicked(MouseEvent e) { // inainte de primu click tre sa afisam Roll DICES!!! -> prima data in constructor
 
-                    if (game.getPlayerToMove().isHuman()){ // muta omul
-                        if (isLeftMouseButton(e)) { // select a move
-                            if (startTile == null) { // first click => startTile
+        if (rowCounter % 2 == 0) game.setPlayerToMove(game.getHumanPlayer());
+        else game.setPlayerToMove(game.getComputerPlayer());
 
-                                startTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
-                                humanMovedPiece = startTile.getPiece();
+        if (game.getPlayerToMove().isHuman()){ // daca i tura lui
+            // si no dat roll i zicem sa dea
+            if (!humanClickedOnRoll){
+                HumanPanel humanPanel = (HumanPanel) this.humanPanel;
+                if (e.getSource() == humanPanel){
+                    System.out.println("A dat click pe humanPanel");
+                    System.out.println(humanPanel.nameLabel.getText());
+                    System.out.println("Dam cu zaru si actualizam la om.");
+                    dice.rollDice();
+                    setDices(game.getHumanPlayer());
+                    System.out.println("Am actualizat");
 
-                                if (humanMovedPiece == null) { // daca o selectat o patratica care nu i buna
-                                    startTile = null; // resetam patratica aleasa
+                    int diceRuleIndex = dice.getFirstDice() + dice.getSecondDice();
+                    manangeRules(game.getHumanPlayer(), diceRuleIndex);
 
-                                } else { // afisam mutarile bune posibile
-                                    validMoves = game.generateValidMoves(startTile);
-                                    for (Move move : validMoves) {
-                                        validEndTiles.add(move.getEnd());
-                                    }
-                                    highlightTiles(validEndTiles);
-                                }
-                            } else { // second click => endTile
-                                endTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
+                    humanClickedOnRoll = true;
+                }
+            }
 
-                                if (tilePanel.itWasClickedAnEndTile(endTile)) {
-                                    for (Move validMove : validMoves) {
-                                        if (endTile == validMove.getEnd()) {
-                                            game.makeMove(validMove);
-                                            break;
+            else if (!humanHasMoved) { // daca o dat click pe roll, il punem sa mute si stabilim daca o mutatstabilim daca o mutat
+
+                //TODO tile click logic
+                for (int i = 0; i < 8; i++){
+                    for (int j = 0; j < 8; j++){
+                        if (e.getSource() == boardPanel.tileBoard[i][j]){ // daca o fost apasat acest tilePanel
+                            TilePanel tilePanel = boardPanel.tileBoard[i][j];
+                            //System.out.println("cine muta " + game.getPlayerToMove().getName());
+
+                            if (game.getPlayerToMove().isHuman()){ // muta omul
+                                if (isLeftMouseButton(e)) { // select a move
+                                    if (startTile == null) { // first click => startTile
+
+                                        startTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
+                                        humanMovedPiece = startTile.getPiece();
+
+                                        if (humanMovedPiece == null) { // daca o selectat o patratica care nu i buna
+                                            startTile = null; // resetam patratica aleasa
+
+                                        } else { // afisam mutarile bune posibile
+                                            validMoves = game.generateValidMoves(startTile);
+                                            for (Move move : validMoves) {
+                                                validEndTiles.add(move.getEnd());
+                                            }
+                                            highlightTiles(validEndTiles);
                                         }
                                     }
+                                    else{ // second click => endTile
+                                        endTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
+
+                                        if (tilePanel.itWasClickedAnEndTile(endTile)) {
+
+                                            for (Move validMove : validMoves) {
+                                                if (endTile == validMove.getEnd()) { // computerTurn.
+                                                    game.makeMove(validMove);
+                                                    // he made a valid move so....
+
+                                                    boardPanel.drawBoard(game);
+                                                    // afisam tabla dupa ce am mutat noi
+                                                    System.out.println(game.getChessboard());
+                                                    // astea tre sa le facem in mom in care termina mutarea
+                                                    startTile = null;
+                                                    endTile = null;
+                                                    validEndTiles.clear();
+                                                    // validMoves.clear() l am mutat mai jos ca sa nu dea ConcurrentException
+                                                    humanHasMoved = true;
+
+                                                    humanClickedOnRoll = false;
+                                                    humanHasMoved = false;
+
+                                                    rowCounter++;
+                                                    // i spunem pc ului sa roll dices
+                                                    ((ComputerPanel) computerPanel).drawRollDices();
+
+                                                    // si dam click pe el.
+                                                   clickOnComputerPanel();
+                                                }
+                                            }
+                                            validMoves.clear();
+                                        }
+                                        else {// ca si cum isi bate joc gen
+                                            // astea tre sa le facem in mom in care deselecteaza mutarea
+                                            boardPanel.unHighlightTiles();
+
+                                            startTile = null;
+                                            endTile = null;
+                                            validEndTiles.clear();
+                                            validMoves.clear();
+
+                                            humanHasMoved = false;
+                                        }
+                                    }
+                                } // if u de la isLeftMouseButton(e)
+                                else if (isRightMouseButton(e)){ // deselect
+                                    boardPanel.unHighlightTiles();
+
+                                    // astea tre sa le facem in mom in care deselecteaza mutarea
+                                    startTile = null;
+                                    endTile = null;
+                                    validEndTiles.clear();
+                                    validMoves.clear();
+
+                                    humanHasMoved = false;
                                 }
-                                else endTile = null;
-
-                                boardPanel.drawBoard(game);
-                                // afisam tabla dupa ce am mutat noi
-                                System.out.println(game.getChessboard());
-                                // astea tre sa le facem in mom in care termina mutarea
-                                startTile = null;
-                                endTile = null;
-                                validEndTiles.clear();
-                                validMoves.clear();
-
                             }
-                        } // if u de la isLeftMouseButton(e)
-                        else if (isRightMouseButton(e)){ // deselect
-                            boardPanel.unHighlightTiles();
-                            // astea tre sa le facem in mom in care deselecteaza mutarea
-                            startTile = null;
-                            endTile = null;
-                            validEndTiles.clear();
-                            validMoves.clear();
                         }
-
-
                     }
-
-                    /*
-                    // aici convertim conditia whileului
-                    System.out.println("Row COUNTER : " + rowCounter); // just to be sure
-
-                    if (rowCounter < 30 && game.getStatus() == Game.Status.PLAY ||
-                            game.getStatus() == Game.Status.WHITE_IN_CHECK || game.getStatus() == Game.Status.BLACK_IN_CHECK) {
-                        // cat timp jocul e valid
-
-                        // aici vom copia logica pentru tratarea CHECKului + checkMATE
-                        // dar momentam tratam doar cazurile basic
-
-                        //if (rowCounter % 2 == 0) game.setPlayerToMove(game.getHumanPlayer());
-                        //else game.setPlayerToMove(game.getComputerPlayer());
-
-                        // zaru omului
-                        dice.rollDice();
-                        System.out.println(dice);
-                        this.setDices(game.getHumanPlayer());
-                        // muta omul
-
-
-
-
-                    }
-                    // daca ajunge aici inseamna ca a trecut o tura
-                    //rowCounter++;
-                     */
-
                 }
+            }
+            else { // tre sa resetam valoriile booleane
+                // daca o dat roll si o mutat si iara i tura lui
+
+                // unComment if it doesnt work in the "move" section
+                //humanClickedOnRoll = false;
+                //humanHasMoved = false;
+            }
+
+            // pana aici am facut sa dea roll si sa faca move.
+        }
+
+        else { // asta i practic tura calculatorului
+            if (! computerClickedOnRoll){
+                ComputerPanel computerPanel = (ComputerPanel) this.computerPanel;
+                if (e.getSource() == computerPanel) {
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    dice.rollDice();
+                    setDices(game.getComputerPlayer());
+
+                    if (computerDiceActivated){
+                        int diceRuleIndex = dice.getFirstDice() + dice.getSecondDice();
+                        manangeRules(game.getComputerPlayer(), diceRuleIndex);
+                    }
+                    else {
+                        computerPanel.disableDice();
+
+                    }
+
+                    computerClickedOnRoll = true;
+                    clickOnComputerPanel();
+                }
+            }
+            else if (! computerHasMoved){
+                ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(false));
+                Random random = new Random();
+                Move bestPick = pcValidMoves.get(random.nextInt(pcValidMoves.size()));
+                //// end of the complex algoritm... ;)))
+                // asteptam 2 secunde sa para ca se ganeste ce sa mute
+                try { Thread.sleep(2000); } catch (InterruptedException exception) { exception.printStackTrace(); }
+                game.makeMove(bestPick);
+                // he made a valid move so....
+
+                boardPanel.drawBoard(game);
+                // afisam tabla dupa o mutat pcul
+                System.out.println(game.getChessboard());
+                rowCounter++;
+                // si resetam valorile booleene
+                computerClickedOnRoll = false;
+                computerHasMoved = false;
+
+                // chiar daca a avut tura asta dice u dezactivat, tura vitoare no sa aiba
+                computerDiceActivated = true;
+
+                // i spunem omului sa mute
+                ((HumanPanel) humanPanel).drawRollDices();
+            }
+
+            /// dar am mutat o mai sus, dupa tura UTILIZATORULUI ca sa nu trebuiasca sa asteptam
+            // functia asta de trigger de click ca sa faca el o mutare
+
+        }
 
 
+
+    }
+
+    private void manangeRules(Player player, int diceRuleIndex) {
+        if (player.isHuman()){
+            switch (diceRuleIndex){ // HUMAN CASE
+                // rule 2 / 12
+                case 2 :
+                case 12 : {
+                    break;
+                }
+                // rule 3 / 11
+                case 3 :
+                case 11 : {
+                    break;
+                }
+                // rule 4 / 10
+                case 4 :
+                case 10 : {
+                    break;
+                }
+                // rule 5 / 9
+                case 5 :
+                case 9 : {
+                    canSwap = true;
+                    break;
+                }
+                // rule 6 / 8
+                case 6 :
+                case 8 : {
+                    humanMagicPoints++;
+                    ((HumanPanel) humanPanel).updateMagicPoints(humanMagicPoints);
+                    break;
+                }
+                case 7 : break;
+
+                default : {
+                    System.out.println("DICE ERROR INDEX");
+                    break;
+                }
+            }
+        }
+        else {
+            switch (diceRuleIndex){ // COMPUTER CASE
+                // rule 2 / 12
+                case 2 :
+                case 12 : {
+                    break;
+                }
+                // rule 3 / 11
+                case 3 :
+                case 11 : {
+                    break;
+                }
+                // rule 4 / 10
+                case 4 :
+                case 10 : {
+                    break;
+                }
+                // rule 5 / 9
+                case 5 :
+                case 9 : {
+
+                    break;
+                }
+                // rule 6 / 8
+                case 6 :
+                case 8 : {
+                    computerMagicPoints++;
+                    ((ComputerPanel) computerPanel).updateMagicPoints(computerMagicPoints);
+                    break;
+                }
+                case 7 : break;
+
+                default : {
+                    System.out.println("DICE ERROR INDEX");
+                    break;
+                }
             }
         }
     }
+
+    public void clickOnComputerPanel () {
+        System.out.println("click function");
+        //try { Thread.sleep(2000); } catch (InterruptedException exception) { exception.printStackTrace(); }
+
+        Component computerPanel = this.computerPanel;
+        Point computerPanelPoint = computerPanel.getLocationOnScreen();
+
+        Robot robot = null;
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+        robot.mouseMove(computerPanelPoint.x + 3, computerPanelPoint.y + 3); // coltu stanga sus
+        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+    }
+
+    public void computerTurn (){
+        // daca e computerPlayer
+        // asteptam sa treaca o secunda.
+
+
+        try { Thread.sleep(2000); } catch (InterruptedException exception) { exception.printStackTrace(); }
+        // afisam rollu
+        ((ComputerPanel) this.computerPanel).drawRollDices();// si asteptam o secunda -> pentru estitica
+        try { Thread.sleep(2000); } catch (InterruptedException exception) { exception.printStackTrace(); }
+        dice.rollDice();
+        setDices(game.getComputerPlayer());
+        System.out.println("Am actualizat");
+        /// acuma face move.
+        //TODO a little more complex algorithm...
+        ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(false));
+        Random random = new Random();
+        Move bestPick = pcValidMoves.get(random.nextInt(pcValidMoves.size()));
+        //// end of the complex algoritm... ;)))
+        // asteptam 2 secunde sa para ca se ganeste ce sa mute
+        try { Thread.sleep(2000); } catch (InterruptedException exception) { exception.printStackTrace(); }
+        game.makeMove(bestPick);
+        // he made a valid move so....
+
+        boardPanel.drawBoard(game);
+        // afisam tabla dupa o mutat pcul
+        System.out.println(game.getChessboard());
+
+        // la sfarsitul turei lui, pregatim noua tura a UTILIZATORULUI.
+        game.setPlayerToMove(game.getHumanPlayer());
+        ///// afisam utilizatorului roll dices
+        ((HumanPanel) humanPanel).drawRollDices();
+    }
+
+
     //////////////////////VVVV///////////////////////
     //////////////////////||||///////////////////////
     /////////////////////////////////////////////////
@@ -279,7 +534,7 @@ public class Board implements MouseListener {
         JLabel magicPointsLabel = new JLabel("MAGIC POINTS : 0");
         JButton boomButton = new JButton("BOOM");
 
-        HumanPanel (String name){
+        HumanPanel (String name, Board thisBoard){
             super(new FlowLayout());
 
             nameLabel.setFont(new Font(name, Font.BOLD, 20));
@@ -292,34 +547,73 @@ public class Board implements MouseListener {
 
             this.add(nameLabel);
             setPreferredSize(HUMAN_PANEL_DIMENSION);
+            addMouseListener(thisBoard);
             validate();
-        }
-        /*
-        public JLabel getRuleDescriptionLabel() {
-            return ruleDescriptionLabel;
+            boomButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (humanMagicPoints >= 3){ // la 3 magic points
+                        // poate activa butonul de boom
+                        computerDiceActivated = false;
+                        humanMagicPoints -= 3;
+                        updateMagicPoints(humanMagicPoints);
+                    }
+                    System.out.println(computerDiceActivated);
+                }
+            });
         }
 
-        public JLabel getFirstDiceLabel() {
-            return firstDiceLabel;
+        public void drawRollDices (){
+            //this.removeAll();
+            //firstDiceLabel.setIcon(null);
+            //secondDiceLabel.setIcon(null);
+            firstDiceLabel.setIcon(diceIcons.get(dice.getFirstDice()));
+            secondDiceLabel.setIcon(diceIcons.get(dice.getSecondDice()));
+            //TODO scrisu cu albastru pt ROLL faze
+            Font rollFont = new Font("Serif", Font.BOLD, 20);
+            ruleDescriptionLabel.setForeground(Color.BLUE);
+            ruleDescriptionLabel.setFont(rollFont);
+            ruleDescriptionLabel.setText("Your turn! Click the dices to roll 'em!");
+            this.validate();
+            this.repaint();
         }
-
-        public JLabel getSecondDiceLabel() {
-            return secondDiceLabel;
-        }
-        */
 
         public void drawUpdated(ImageIcon firstDice, ImageIcon secondDice, String rule) {
-            this.removeAll();
+            //this.removeAll();
             // set the things
             //humanPanel.drawUpdated(diceIcons.get(firstDice), diceIcons.get(secondDice), dice.getRule());
 
             firstDiceLabel.setIcon(firstDice);
             secondDiceLabel.setIcon(secondDice);
+
+            //TODO scrisu cu negru pt BASIC UPDATED
+            Font basicFont = new Font("Dialog", Font.BOLD, 14);
+            ruleDescriptionLabel.setForeground(Color.BLACK);
+            ruleDescriptionLabel.setFont(basicFont);
             ruleDescriptionLabel.setText(rule);
 
             this.validate();
             this.repaint();
 
+        }
+
+        public void updateMagicPoints(int humanMagicPoints) {
+            magicPointsLabel.setText("MAGIC POINTS : " + humanMagicPoints);
+            this.validate();
+            this.repaint();
+        }
+
+        public void disableDice() {
+            firstDiceLabel.setIcon(diceIcons.get(dice.getFirstDice()));
+            secondDiceLabel.setIcon(diceIcons.get(dice.getSecondDice()));
+
+            //TODO scrisu cu negru pt BASIC UPDATED
+            Font disableFont = new Font("Serif", Font.BOLD, 20);
+            ruleDescriptionLabel.setForeground(Color.RED);
+            ruleDescriptionLabel.setFont(disableFont);
+            ruleDescriptionLabel.setText("YOUR DICES POWER ARE DISABLED!");
+            this.validate();
+            this.repaint();
         }
     }
 
@@ -331,7 +625,7 @@ public class Board implements MouseListener {
         JLabel magicPointsLabel = new JLabel("MAGIC POINTS : 0");
         JButton boomButton = new JButton("BOOM");
 
-        ComputerPanel (){
+        ComputerPanel (Board thisBoard){
             super(new FlowLayout());
 
             nameLabel.setFont(new Font("LORD INATEUR", Font.BOLD, 20));
@@ -344,19 +638,74 @@ public class Board implements MouseListener {
 
             this.add(nameLabel);
             setPreferredSize(COMPUTER_PANEL_DIMENSION);
+            addMouseListener(thisBoard);
+            boomButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (computerMagicPoints >= 3){ // la 3 magic points
+                        // poate activa butonul de boom
+                        humanDiceActivated = false;
+                        computerMagicPoints -= 3;
+                        updateMagicPoints(computerMagicPoints);
+                    }
+                    System.out.println(humanDiceActivated);
+                }
+            });
             validate();
         }
 
-        public JLabel getFirstDiceLabel() {
-            return firstDiceLabel;
+        public void drawRollDices (){
+            //this.removeAll();
+            //firstDiceLabel.setIcon(null);
+            //secondDiceLabel.setIcon(null);
+            firstDiceLabel.setIcon(diceIcons.get(dice.getFirstDice()));
+            secondDiceLabel.setIcon(diceIcons.get(dice.getSecondDice()));
+
+            //TODO scrisu cu albastru pt ROLL faze
+            Font rollFont = new Font("Serif", Font.BOLD, 20);
+            ruleDescriptionLabel.setForeground(Color.BLUE);
+            ruleDescriptionLabel.setFont(rollFont);
+            ruleDescriptionLabel.setText("Your turn! Click the dices to roll 'em!");
+            this.validate();
+            this.repaint();
         }
 
-        public JLabel getSecondDiceLabel() {
-            return secondDiceLabel;
+        public void drawUpdated(ImageIcon firstDice, ImageIcon secondDice, String rule) {
+            //this.removeAll();
+            // set the things
+            //humanPanel.drawUpdated(diceIcons.get(firstDice), diceIcons.get(secondDice), dice.getRule());
+
+            firstDiceLabel.setIcon(firstDice);
+            secondDiceLabel.setIcon(secondDice);
+
+            //TODO scrisu cu negru pt BASIC UPDATED
+            Font basicFont = new Font("Dialog", Font.BOLD, 14);
+            ruleDescriptionLabel.setForeground(Color.BLACK);
+            ruleDescriptionLabel.setFont(basicFont);
+            ruleDescriptionLabel.setText(rule);
+
+            this.validate();
+            this.repaint();
+
         }
 
-        public JLabel getRuleDescriptionLabel() {
-            return ruleDescriptionLabel;
+        public void updateMagicPoints(int computerMagicPoints) {
+            magicPointsLabel.setText("MAGIC POINTS : " + computerMagicPoints);
+            this.validate();
+            this.repaint();
+        }
+
+        public void disableDice() {
+            firstDiceLabel.setIcon(diceIcons.get(dice.getFirstDice()));
+            secondDiceLabel.setIcon(diceIcons.get(dice.getSecondDice()));
+
+            //TODO scrisu cu negru pt BASIC UPDATED
+            Font disableFont = new Font("Serif", Font.BOLD, 20);
+            ruleDescriptionLabel.setForeground(Color.RED);
+            ruleDescriptionLabel.setFont(disableFont);
+            ruleDescriptionLabel.setText("YOUR DICES POWER ARE DISABLED!");
+            this.validate();
+            this.repaint();
         }
     }
 
@@ -607,7 +956,6 @@ public class Board implements MouseListener {
             setBackground(tileColor);
         }
 
-
         public void drawTile(Game game) {
             this.setTileColor();
             this.setPieceIcon(game);
@@ -616,7 +964,7 @@ public class Board implements MouseListener {
         }
     }
 
-
+    // board methods :
 
     public void highlightTiles (ArrayList<Tile> tiles){
         for (Tile tile : tiles){
