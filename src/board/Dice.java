@@ -9,11 +9,11 @@ public class Dice {
         "SCHIMBA TABLA", // 2
         "<html> DISPAR REGINELE. URMATOAREA DATA <br> APAR PE POZITIILE UNDE AU DISPARUT </html>", // 3
         "<html> TURA POATE MERGE PE <br> DIAGONALA (DOAR TURA ASTA) </html>", // 4
-        "<html> INTERSCHIMBA PE TABLA <br> UN CAL CU UN NEBUN (PROPRIU) </html>", // 5
+        "<html> POTI INTERSCHIMBA PE TABLA <br> UN CAL CU UN NEBUN (PROPRIU) </html>", // 5
         "ACUMULEZI UN PUNCT MAGIC", // 6
             "NICI O REGULA", // 7
         "ACUMULEZI UN PUNCT MAGIC", // 8
-        "<html> INTERSCHIMBA PE TABLA <br> UN CAL CU UN NEBUN (PROPRIU) </html>", // 9
+        "<html> POTI INTERSCHIMBA PE TABLA <br> UN CAL CU UN NEBUN (PROPRIU) </html>", // 9
         "<html> TURA POATE MERGE PE <br> DIAGONALA (DOAR TURA ASTA) </html>", // 10
         "<html> DISPAR REGINELE. URMATOAREA DATA <br> APAR PE POZITIILE UNDE AU DISPARUT </html>", // 11
         "SCHIMBA TABLA", // 12
@@ -30,8 +30,8 @@ public class Dice {
         secondDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
 
         // here we force the dices
-        firstDice = 2;
-        secondDice = 4;
+        firstDice = 3;
+        secondDice = 6;
 
 
         rule = rules[firstDice + secondDice];

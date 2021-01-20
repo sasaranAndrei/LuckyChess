@@ -270,16 +270,104 @@ public class Board implements MouseListener {
                                             }
                                             validMoves.clear();
                                         }
-                                        else {// ca si cum isi bate joc gen
-                                            // astea tre sa le facem in mom in care deselecteaza mutarea
-                                            boardPanel.unHighlightTiles();
+                                        else { // ori o mutat gresit ori vrea sa facam interschimbarea de la regula 5 / 9
+                                            if (canSwap){
+                                                // daca vrea sa faca schimbu Cal -> Nebun
+                                                if (startTile.getPiece() instanceof Knight && endTile.getPiece() instanceof Bishop){
+                                                    Piece knight = startTile.getPiece();
+                                                    Piece bishop = endTile.getPiece();
+                                                    game.getChessboard().removePieceFromTile(startTile);
+                                                    game.getChessboard().removePieceFromTile(endTile);
+                                                    startTile.setPiece(bishop);
+                                                    endTile.setPiece(knight);
+                                                    /// aici sfarseste interschimbarea
 
-                                            startTile = null;
-                                            endTile = null;
-                                            validEndTiles.clear();
-                                            validMoves.clear();
+                                                    // marcam mutarea valida, facem ce se cuvine
+                                                    canSwap = false; // gata interschimbarea, pregatim variabila booleana pt calculator
 
-                                            humanHasMoved = false;
+                                                    ////// so... a facut un valid move, tre sa comportam ca atare
+                                                    boardPanel.drawBoard(game);
+                                                    // afisam tabla dupa ce am mutat noi
+                                                    System.out.println(game.getChessboard());
+                                                    // astea tre sa le facem in mom in care termina mutarea
+                                                    startTile = null;
+                                                    endTile = null;
+                                                    validEndTiles.clear();
+                                                    // validMoves.clear() l am mutat mai jos ca sa nu dea ConcurrentException
+                                                    humanHasMoved = true;
+
+                                                    humanClickedOnRoll = false;
+                                                    humanHasMoved = false;
+
+                                                    rowCounter++;
+                                                    // i spunem pc ului sa roll dices
+                                                    ((ComputerPanel) computerPanel).drawRollDices();
+
+                                                    // si dam click pe el.
+                                                    clickOnComputerPanel();
+
+
+                                                }
+                                                // daca vrea sa faca schimbu Cal -> Nebun
+                                                else if (startTile.getPiece() instanceof Bishop && endTile.getPiece() instanceof Knight){
+                                                    Piece bishop = startTile.getPiece();
+                                                    Piece knight = endTile.getPiece();
+                                                    game.getChessboard().removePieceFromTile(startTile);
+                                                    game.getChessboard().removePieceFromTile(endTile);
+                                                    startTile.setPiece(knight);
+                                                    endTile.setPiece(bishop);
+                                                    /// aici sfarseste interschimbarea
+
+                                                    // marcam mutarea valida, facem ce se cuvine
+                                                    canSwap = false; // gata interschimbarea, pregatim variabila booleana pt calculator
+
+                                                    ////// so... a facut un valid move, tre sa comportam ca atare
+                                                    boardPanel.drawBoard(game);
+                                                    // afisam tabla dupa ce am mutat noi
+                                                    System.out.println(game.getChessboard());
+                                                    // astea tre sa le facem in mom in care termina mutarea
+                                                    startTile = null;
+                                                    endTile = null;
+                                                    validEndTiles.clear();
+                                                    // validMoves.clear() l am mutat mai jos ca sa nu dea ConcurrentException
+                                                    humanHasMoved = true;
+
+                                                    humanClickedOnRoll = false;
+                                                    humanHasMoved = false;
+
+                                                    rowCounter++;
+                                                    // i spunem pc ului sa roll dices
+                                                    ((ComputerPanel) computerPanel).drawRollDices();
+
+                                                    // si dam click pe el.
+                                                    clickOnComputerPanel();
+                                                }
+                                                else { // daca ajunge aici inseamna ca nu poate efectua regula 5/9
+                                                    // dar nu a apsatt pe cal / nebun, deci facem deselectie...
+                                                    boardPanel.unHighlightTiles();
+
+                                                    startTile = null;
+                                                    endTile = null;
+                                                    validEndTiles.clear();
+                                                    validMoves.clear();
+
+                                                    humanHasMoved = false;
+                                                }
+
+
+
+                                            }
+                                            else { // doar o mutat prost
+                                                boardPanel.unHighlightTiles();
+
+                                                startTile = null;
+                                                endTile = null;
+                                                validEndTiles.clear();
+                                                validMoves.clear();
+
+                                                humanHasMoved = false;
+                                            }
+
                                         }
                                     }
                                 } // if u de la isLeftMouseButton(e)
@@ -376,6 +464,7 @@ public class Board implements MouseListener {
                 // rule 2 / 12
                 case 2 :
                 case 12 : {
+                    switchSides();
                     break;
                 }
                 // rule 3 / 11
@@ -447,6 +536,10 @@ public class Board implements MouseListener {
                 }
             }
         }
+    }
+
+    private void switchSides() {
+        // deocamdata facem redraw si dupa vedem ce chestii de logica mai tre sa implementam.
     }
 
     public void clickOnComputerPanel () {
@@ -587,7 +680,7 @@ public class Board implements MouseListener {
             secondDiceLabel.setIcon(secondDice);
 
             //TODO scrisu cu negru pt BASIC UPDATED
-            Font basicFont = new Font("Dialog", Font.BOLD, 14);
+            Font basicFont = new Font("Dialog", Font.BOLD, 12);
             ruleDescriptionLabel.setForeground(Color.BLACK);
             ruleDescriptionLabel.setFont(basicFont);
             ruleDescriptionLabel.setText(rule);
