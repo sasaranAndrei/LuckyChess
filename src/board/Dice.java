@@ -25,9 +25,9 @@ public class Dice {
     private int secondDice = 1;
     private String rule = rules[2];
 
-    private static int[] firstDiceTest = {1, 1, 1, 1};
-    private static int[] secondDiceTest = {2, 1, 2, 1};
-    private static int testCounter = 0;
+    private static int[] firstDiceTest =  {1, 1, 1, 1, 2, 2, 1, 1} ;
+    private static int[] secondDiceTest = {2, 1, 2, 1, 2, 3, 2, 2};
+    private static int testCounter = 0; // 3  2  3  2  4  5  3  3
 
     public void rollDice (){
         firstDice = Math.abs(random.nextInt()) % 6 + 1; // VALORI [1..6]
@@ -36,11 +36,17 @@ public class Dice {
         // here we force the dices
         //firstDice = 1;
         //secondDice = 2;
-        if (testCounter < 4){
+
+
+        if (testCounter < firstDiceTest.length){
             firstDice = firstDiceTest[testCounter];
             secondDice = secondDiceTest[testCounter];
             testCounter++;
         }
+
+
+
+
 
         rule = rules[firstDice + secondDice];
 
