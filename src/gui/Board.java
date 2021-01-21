@@ -45,6 +45,7 @@ public class Board implements MouseListener {
 
         private Game game;
         private Dice dice = new Dice();
+        private Start startGUI;
 
 
     private void loadIcons (){ // load DICE ICONS
@@ -60,10 +61,11 @@ public class Board implements MouseListener {
         }
     }
 
-    public Board(String humanPlayerName) throws HeadlessException {
+    public Board(String humanPlayerName, Start startGUI) throws HeadlessException {
 
         loadIcons(); // dices icons
         game = new Game(humanPlayerName);
+        startGUI = startGUI;
 
         this.mainFrame = new JFrame("LUCKY CHESS");
         this.mainFrame.setResizable(false);
@@ -197,20 +199,37 @@ public class Board implements MouseListener {
         if (rowCounter % 2 == 0) game.setPlayerToMove(game.getHumanPlayer());
         else game.setPlayerToMove(game.getComputerPlayer());
 
+        if (isCheckMate(game.getPlayerToMove())){
+            if (game.getPlayerToMove().isHuman()){
+                JOptionPane.showMessageDialog(mainFrame, "GAME OVER, HUMAN PLAYER!");
+            }
+            else {
+                System.out.println("GAME OVER, COMPUTER PLAYER!");
+            }
+            //try { Thread.sleep(4000); } catch (InterruptedException ex) { ex.printStackTrace(); }
+
+            //mainFrame.setVisible(false);
+            //startGUI.getStartFrame().setVisible(true);
+            //mainFrame.dispose();
+        }
+
         if (game.getPlayerToMove().isHuman()){ // daca i tura lui
             // si no dat roll i zicem sa dea
             if (!humanClickedOnRoll){
                 HumanPanel humanPanel = (HumanPanel) this.humanPanel;
                 if (e.getSource() == humanPanel){
-                    System.out.println("A dat click pe humanPanel");
-                    System.out.println(humanPanel.nameLabel.getText());
-                    System.out.println("Dam cu zaru si actualizam la om.");
                     dice.rollDice();
                     setDices(game.getHumanPlayer());
-                    System.out.println("Am actualizat");
 
-                    int diceRuleIndex = dice.getFirstDice() + dice.getSecondDice();
-                    manangeRules(game.getHumanPlayer(), diceRuleIndex);
+                    if (humanDiceActivated){
+                        int diceRuleIndex = dice.getFirstDice() + dice.getSecondDice();
+                        manangeRules(game.getHumanPlayer(), diceRuleIndex);
+                    }
+                    else {
+                        humanPanel.disableDice();
+                        humanDiceActivated = true;
+                    }
+
                     humanClickedOnRoll = true;
 
                     //System.out.println(humanHasMoved);
@@ -481,12 +500,12 @@ public class Board implements MouseListener {
                         int diceRuleIndex = dice.getFirstDice() + dice.getSecondDice();
                         manangeRules(game.getComputerPlayer(), diceRuleIndex);
                     }
-                    else { // cand are zaru dezactivat sa incerce si el
-                        // sa il dezactiveze pe al omului
+                    else {
                         computerPanel.disableDice();
-                        clickOnComputerBoom();
                     }
 
+
+                    clickOnComputerBoom();
                     computerClickedOnRoll = true;
                     clickOnComputerPanel();
                 }
@@ -579,7 +598,7 @@ public class Board implements MouseListener {
                         }
                     }
                     if (canMoveThere) {
-                        int currentValueOfAttackMove = attackedPiece.getValue() + pieceThatAttack.getValue();
+                        int currentValueOfAttackMove = attackedPiece.getValue();
                         if (currentValueOfAttackMove > bestValueOfAttackMove) {
                             bestValueOfAttackMove = currentValueOfAttackMove;
                             bestAttackMove = attackMove;
@@ -594,57 +613,140 @@ public class Board implements MouseListener {
 
         System.out.println("bestVAttakc " + bestValueOfAttackMove + " : " + bestAttackMove);
 
+        // the more complex way to find the best basic move.
+        // incercam sa salvam cea mai importanta piesa atacata
+        ArrayList<Piece> ownPieces = game.getChessboard().storePieces( ! humanIsWhite);
+        Collections.sort(ownPieces);
+//        System.out.println("own pieces sorted by value");
+//        for (Piece piece : ownPieces){
+//            System.out.println(piece.getType());
+//        }
+
+        // le avem sortate
+
+        // stabilim mutariile adversarului
+        // ca sa vedem patratele vulnerabile
+
+
+        ArrayList<Move> opponentMoves = game.generateAllValidMoves(game.getChessboard().storePieces(humanIsWhite), humanIsWhite);
+        HashSet<Tile> vulnerableTiles = new HashSet<>();
+        for (Move opponentMove : opponentMoves){
+            vulnerableTiles.add(opponentMove.getEnd());
+        }
+
+        // sa vedem cea mai importanta piesa vulnerabila
+        Piece mostImportantVulnerablePiece = null;
+        boolean weFoundOne = false;
+        for (Piece piece : ownPieces){
+            Tile tileOfPiece = game.findTheTile(game.getChessboard(), piece);
+            for (Tile vulnerableTile : vulnerableTiles){
+                if (vulnerableTile == tileOfPiece){
+                    mostImportantVulnerablePiece = piece;
+                    weFoundOne = true;
+                    break;
+                }
+            }
+            if (weFoundOne){
+                break;
+            }
+        }
+
+
         // find best basic move
-        // generam o mutare safe random
+        // generam o mutare safe
         Move bestBasicMove = null;
-        int size = basicMoves.size();
-        if (size > 0){
+        int bestValueOfBasicMove = -1;
+        if (weFoundOne && mostImportantVulnerablePiece != null){
+            System.out.println(mostImportantVulnerablePiece.getType());
 
-            boolean isSafeMove;
-            do {
-                isSafeMove = true; // presupunem ca i true
+            Tile tileOfIt =  game.findTheTile(game.getChessboard(), mostImportantVulnerablePiece);
+            // ii cautam un safe tile
+            ArrayList<Move> safeMovesVulnerablePiece = findSafeMovesForVulnerablePiece(tileOfIt, basicMoves, vulnerableTiles);
+            Random random = new Random();
+            // alegem o mutare basic si safe random
+            if (safeMovesVulnerablePiece.size() > 1){
+                bestBasicMove = safeMovesVulnerablePiece.get(Math.abs(random.nextInt()) % safeMovesVulnerablePiece.size());
+                bestValueOfBasicMove = mostImportantVulnerablePiece.getValue();
 
-                Random random = new Random();
-                // luam o mutare basic random
-                bestBasicMove = basicMoves.get(random.nextInt(size));
+            }
+        }
 
-                // vedem daca e safe
-                Piece pieceFromStartTile = bestBasicMove.getStart().getPiece();
 
-                Tile endTile = bestBasicMove.getEnd();
-                Piece pieceFromEndTile = endTile.getPiece();
 
-                endTile.setPiece(pieceFromStartTile); // incercam sa facem mutarea
+        if (bestValueOfBasicMove > bestValueOfAttackMove){ // daca piesa vulnerabila
+            // valoreaza mai mult ca piesa pe care o putem captura
+            bestPick = bestBasicMove;
+        }
+        else { // daca piesa pe care o putem captura / schimbul valoreaza mai mult
+            // ca piesa pe care o putem pierde, mutam in atac
+            bestPick = bestAttackMove;
+        }
 
-                // iar acuma generam valid movesurile ale jucatorului
-                //boolean canMoveThere = true;
-                ArrayList<Move> opponentMoves = game.generateAllValidMoves(game.getChessboard().storePieces(humanIsWhite), humanIsWhite);
-                for (Move opponentMove : opponentMoves){
-                    if (opponentMove.getEnd() == endTile){
-                        // daca mi poate lua piesa dupa ce mut acolo,
-                        // mai bine zic PAS
-                        // canMoveThere = false;
-                        isSafeMove = false;
+        Move randomPick = null;
+        if (bestPick == null){ // daca nu putem captura nici o piesa
+            // si nu avem nici o piesa amenintata, mutam safe si random
+            int size = basicMoves.size();
+            if (size > 0){
+
+                boolean isSafeMove;
+                do {
+                    isSafeMove = true; // presupunem ca i true
+
+                    Random random = new Random();
+                    // luam o mutare basic random
+                    randomPick = basicMoves.get(random.nextInt(size));
+
+                    // vedem daca e safe
+                    Piece pieceFromStartTile = randomPick.getStart().getPiece();
+
+                    Tile endTile = randomPick.getEnd();
+                    Piece pieceFromEndTile = endTile.getPiece();
+
+                    endTile.setPiece(pieceFromStartTile); // incercam sa facem mutarea
+
+                    // iar acuma generam valid movesurile ale jucatorului
+                    //boolean canMoveThere = true;
+                    opponentMoves = game.generateAllValidMoves(game.getChessboard().storePieces(humanIsWhite), humanIsWhite);
+                    for (Move opponentMove : opponentMoves){
+                        if (opponentMove.getEnd() == endTile){
+                            // daca mi poate lua piesa dupa ce mut acolo,
+                            // mai bine zic PAS
+                            // canMoveThere = false;
+                            isSafeMove = false;
+                            break;
+                        }
+                    }
+                    // dupa ce ne am terminat prostiile
+                    // refacem totu cum era initial
+                    endTile.setPiece(pieceFromEndTile);
+                } while (! isSafeMove);
+            }
+
+            bestPick = randomPick;
+        }
+
+        return bestPick;
+    }
+
+    private ArrayList<Move> findSafeMovesForVulnerablePiece(Tile tileOfIt, ArrayList<Move.BasicMove> basicMoves, HashSet<Tile> vulnerableTiles) {
+        ArrayList<Move> safeMoves = new ArrayList<>();
+        for (Move basicMove :  basicMoves){ // mergem pe la toate mutarile
+            if (basicMove.getStart() == tileOfIt){ // tile ul unde i piesa notSafe
+
+                boolean isSafeTile = true;
+                for (Tile vulnerableTile : vulnerableTiles){
+                    if (basicMove.getEnd() == vulnerableTile){ // nu e safe
+                        isSafeTile = false;
                         break;
                     }
                 }
-                // dupa ce ne am terminat prostiile
-                // refacem totu cum era initial
-                endTile.setPiece(pieceFromEndTile);
-            } while (! isSafeMove);
-        }
 
-        System.out.println("best basic move : "+ bestBasicMove);
-
-        if (bestAttackMove == null){
-            bestPick = bestBasicMove;
+                if (isSafeTile){ // move care are startTile = unde i piesa si endTile = safe
+                    safeMoves.add(basicMove);
+                }
+            }
         }
-        else {
-            bestPick = bestAttackMove;
-        }
-        
-        return bestPick;
-
+        return safeMoves;
     }
 
     private void manangeRules(Player player, int diceRuleIndex) {
@@ -706,17 +808,17 @@ public class Board implements MouseListener {
                 }
                 // rule 3 / 11
                 case 3 : case 11 : {
-                    /*
+
                     if (counterForRuleNo3 % 2 == 0){ // dispar reginele
                         findLastQueens();
                         hideQueens();
                     }
                     else { // apar reginele
-                        showQueens();
+                        //showQueens();
+                        randomShowQueens();
                     }
                     counterForRuleNo3++;
 
-                     */
                     break;
                 }
                 // rule 4 / 10
@@ -767,12 +869,13 @@ public class Board implements MouseListener {
         } while (game.getChessboard().getBoard()[blackQueenX][blackQueenY].getPiece() != null);
 
         // daca am ajuns aici avem 2 pozitii valide pt unde vor aparea reginele
-//        System.out.println("the random values:");
-//        System.out.println(whiteQueenX + " " + whiteQueenY);
-//        System.out.println(blackQueenX + " " + blackQueenY);
+        System.out.println("the random values:");
+        System.out.println(whiteQueenX + " " + whiteQueenY);
+        System.out.println(blackQueenX + " " + blackQueenY);
 
-        game.getChessboard().getBoard()[whiteQueenX][whiteQueenY].setPiece(whiteQueen);
-        game.getChessboard().getBoard()[blackQueenX][blackQueenY].setPiece(blackQueen);
+        if (whiteQueen != null) game.getChessboard().getBoard()[whiteQueenX][whiteQueenY].setPiece(whiteQueen);
+        if (blackQueen != null) game.getChessboard().getBoard()[blackQueenX][blackQueenY].setPiece(blackQueen);
+
         boardPanel.drawBoard(game);
     }
 
@@ -982,10 +1085,10 @@ public class Board implements MouseListener {
             boomButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (humanMagicPoints >= 5){ // la 5 magic points
+                    if (humanMagicPoints >= 3){ // la 3 magic points
                         // poate activa butonul de boom
                         computerDiceActivated = false;
-                        humanMagicPoints -= 5;
+                        humanMagicPoints -= 3;
                         updateMagicPoints(humanMagicPoints);
                     }
                 }
@@ -1784,11 +1887,8 @@ public class Board implements MouseListener {
             System.out.println("bug");
         }
         else {
-            System.out.println("Last moved piece is " + lastHumanMovedPiece.getType() + " from " +
-                    lastHumanMoveMade.getStart().getCoordinates() + "  to  " + lastHumanMoveMade.getEnd().getCoordinates());
             for (Piece piece : opponentPieces){
                 if (piece != lastHumanMovedPiece){
-                    System.out.println("piesa  " + piece.getType() + " genereaza vulnerable tiles urmatoare:");
                     ArrayList<Tile> nextVulnerableTiles = piece.getPossibleVulnerableTiles(game, game.findTheTile(game.getChessboard(), piece));
                     if (nextVulnerableTiles.size() > 0){
                         for (Tile tile : nextVulnerableTiles){
@@ -1960,7 +2060,40 @@ public class Board implements MouseListener {
      */
 
     private boolean isCheckMate(Player playerToMove) {
+        if (playerToMove.isHuman()) { // daca i tura omului
+            Tile humanKing = findKing(humanIsWhite);
+            if (humanKing == null){ // nu l o gasit deci e sah mat pt human
+                return true;
+            }
+        }
+        else {
+            Tile computerKing = findKing(!humanIsWhite);
+            if (computerKing == null) {
+                return true;
+            }
+        }
         return false;
+    }
+
+    private Tile findKing (boolean white){
+        String kingToFind;
+        if (white) kingToFind = "K";
+        else kingToFind = "k";
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+
+                Piece piece = game.getChessboard().getBoard()[i][j].getPiece();
+                if (piece != null){
+
+                    if (piece.getType().equals(kingToFind)){
+                        return game.getChessboard().getBoard()[i][j];
+                    }
+
+                }
+
+            }
+        }
+        return null;
     }
 
 }

@@ -33,12 +33,7 @@ public class Player {
         return human;
     }
 
-    /*
-    public MoveTransition makeMove (Move move){
-        return null;
+    public King getKing() {
+        return king;
     }
-     */
-
-
-
 }

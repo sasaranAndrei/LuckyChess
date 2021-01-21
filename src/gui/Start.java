@@ -81,10 +81,10 @@ public class Start {
         this.playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String humanPlayerName = humanPlayerText.getText();
+
 
                 //Game game = new Game(humanPlayerName);
-                Board boardFrame = new Board(humanPlayerName);
+                foo();
 
                 //boardFrame.play();
                 //Controller controller = new Controller(game, boardFrame);
@@ -92,7 +92,7 @@ public class Start {
                 //controller.play();
 
 
-                startFrame.setVisible(false);
+
             }
         });
 
@@ -108,6 +108,16 @@ public class Start {
         this.startFrame.setVisible(true);
         centreFrame();
 
+    }
+
+    private void foo() {
+        String humanPlayerName = humanPlayerText.getText();
+        Board boardFrame = new Board(humanPlayerName, this);
+        startFrame.setVisible(false);
+    }
+
+    public JFrame getStartFrame() {
+        return startFrame;
     }
 
     public String getHumanPlayerName() {

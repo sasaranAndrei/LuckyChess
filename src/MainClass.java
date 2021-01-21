@@ -8,12 +8,12 @@ import pieces.*;
 
 public class MainClass {
     public static void main(String[] args) {
-        //Start startGUI = new Start();
+        Start startGUI = new Start();
 
 
         String humanPlayerName = "sosy";
 
-        Board boardFrame = new Board(humanPlayerName);
+        //Board boardFrame = new Board(humanPlayerName);
         //boardFrame.playInterface();
 
         //boardFrame.play();

@@ -27,6 +27,6 @@ public abstract class Piece implements Comparable{
     @Override
     public int compareTo(Object o) {
         Piece comparedPiece = (Piece) o;
-        return this.getValue() - comparedPiece.getValue();
+        return -this.getValue() + comparedPiece.getValue();
     }
 }

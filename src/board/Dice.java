@@ -37,12 +37,14 @@ public class Dice {
         //firstDice = 1;
         //secondDice = 2;
 
-
+        /*
         if (testCounter < firstDiceTest.length){
             firstDice = firstDiceTest[testCounter];
             secondDice = secondDiceTest[testCounter];
             testCounter++;
         }
+
+         */
 
 
 
