@@ -63,6 +63,9 @@ public class Board implements MouseListener {
 
     public Board(String humanPlayerName, Start startGUI) throws HeadlessException {
 
+        // anuntam oamenii ce presupune sahu mat
+        JOptionPane.showMessageDialog(mainFrame, "IN ACEST JOC SAH MAT = CAPTURAREA REGELUI ADVERS !!!");
+
         loadIcons(); // dices icons
         game = new Game(humanPlayerName);
         startGUI = startGUI;
@@ -91,7 +94,7 @@ public class Board implements MouseListener {
         ((HumanPanel) humanPanel).drawRollDices();
 
         loadPieceIcons();
-
+        centreFrame();
         ///////////this.mainFrame.setVisible(false);
         //this.mainFrame.setVisible(false);
 
@@ -99,6 +102,13 @@ public class Board implements MouseListener {
 
     public Game getGame() {
         return game;
+    }
+
+    public void centreFrame() {
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - this.mainFrame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - this.mainFrame.getHeight()) / 2);
+        this.mainFrame.setLocation(x, y);
     }
 
     private void loadPieceIcons (){
@@ -201,10 +211,12 @@ public class Board implements MouseListener {
 
         if (isCheckMate(game.getPlayerToMove())){
             if (game.getPlayerToMove().isHuman()){
-                JOptionPane.showMessageDialog(mainFrame, "GAME OVER, HUMAN PLAYER!");
+                JOptionPane.showMessageDialog(mainFrame, "GAME OVER. COMPUTER PLAYER WINS!");
+                gameOver();
             }
             else {
-                System.out.println("GAME OVER, COMPUTER PLAYER!");
+                JOptionPane.showMessageDialog(mainFrame, "GAME OVER. HUMAN PLAYER WINS!");
+                gameOver();
             }
             //try { Thread.sleep(4000); } catch (InterruptedException ex) { ex.printStackTrace(); }
 
@@ -251,7 +263,6 @@ public class Board implements MouseListener {
                             if (game.getPlayerToMove().isHuman()){ // muta omul
                                 if (isLeftMouseButton(e)) { // select a move
                                     if (startTile == null) { // first click => startTile
-                                        System.out.println("u here????? first click");
 
                                         startTile = game.getChessboard().getBoard()[tilePanel.getCoordX()][tilePanel.getCoordY()];
                                         humanMovedPiece = startTile.getPiece();
@@ -518,6 +529,11 @@ public class Board implements MouseListener {
 
                 // aici incercam sa implementam functia mai complexa putin
                 ArrayList<Move> pcValidMoves = game.generateAllValidMoves(game.getChessboard().storePieces(!humanIsWhite), humanIsWhite);
+                //todo i mai adaugam si de la regula 4/10
+                if (rookDiagonal){
+                    addRule4(pcValidMoves);
+                }
+
                 Move bestPick = algorithmMove(pcValidMoves, humanIsWhite);
                 //Move bestPick = newPickTheBestMove(pcValidMoves, lastHumanMoveMade, humanIsWhite);
 
@@ -550,6 +566,70 @@ public class Board implements MouseListener {
 
 
 
+    }
+
+    private void addRule4 (ArrayList<Move> pcValidMoves){
+        Piece rook1 = null;
+        Piece rook2 = null;
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j < 8; j++){
+                Piece piece = game.getChessboard().getBoard()[i][j].getPiece();
+                if (piece != null){
+
+                    if (piece instanceof Rook && piece.white == !humanIsWhite){ // daca este un rook al pcului
+
+                        if (rook1 == null) rook1 = piece;
+                        else {
+                            rook2 = piece;
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        Tile rookTile1 = null;
+        Tile rookTile2 = null;
+
+        if (rook1 != null) rookTile1 = game.findTheTile(game.getChessboard(), rook1);
+        if (rook2 != null) rookTile2 = game.findTheTile(game.getChessboard(), rook2);
+
+        if (rookTile1 != null){
+            // facem schema punem bishop...
+            game.getChessboard().removePieceFromTile(rookTile1);
+            // punem un bishop ca sa vedem mutarile posibile
+            Piece bishop = new Bishop(rook1.white);
+            rookTile1.setPiece(bishop);
+            pcValidMoves.addAll(bishop.generateValidMoves(game, rookTile1, humanIsWhite));
+            // dupa ce am adaugat mutarile posibile, punem la loc tura
+            game.getChessboard().removePieceFromTile(rookTile1);
+            rookTile1.setPiece(rook1);
+
+            //rookDiagonal = false; // gata mutarea speciala, pregatim variabila booleana pt calculator
+        }
+
+        if (rookTile2 != null){
+            // facem schema punem bishop...
+            game.getChessboard().removePieceFromTile(rookTile2);
+            // punem un bishop ca sa vedem mutarile posibile
+            Piece bishop = new Bishop(rook2.white);
+            rookTile2.setPiece(bishop);
+            pcValidMoves.addAll(bishop.generateValidMoves(game, rookTile1, humanIsWhite));
+            // dupa ce am adaugat mutarile posibile, punem la loc tura
+            game.getChessboard().removePieceFromTile(rookTile2);
+            rookTile2.setPiece(rook2);
+
+            //rookDiagonal = false; // gata mutarea speciala, pregatim variabila booleana pt calculator
+        }
+
+        rookDiagonal = false; // gata mutarea speciala, pregatim variabila booleana pt calculator
+    }
+
+    private void gameOver() {
+        this.mainFrame.dispose();
+        System.exit(0);
+        //startGUI.getStartFrame().setVisible(true);
     }
 
     private Move algorithmMove(ArrayList<Move> pcValidMoves, boolean humanIsWhite) {
@@ -1105,7 +1185,7 @@ public class Board implements MouseListener {
             Font rollFont = new Font("Serif", Font.BOLD, 20);
             ruleDescriptionLabel.setForeground(Color.BLUE);
             ruleDescriptionLabel.setFont(rollFont);
-            ruleDescriptionLabel.setText("Your turn! Click the dices to roll 'em!");
+            ruleDescriptionLabel.setText("RANDUL TAU! APASA PE ZARURI PENTRU A LE ARUNCA!");
             this.validate();
             this.repaint();
         }
@@ -1119,7 +1199,7 @@ public class Board implements MouseListener {
             secondDiceLabel.setIcon(secondDice);
 
             //TODO scrisu cu negru pt BASIC UPDATED
-            Font basicFont = new Font("Dialog", Font.BOLD, 12);
+            Font basicFont = new Font("Dialog", Font.BOLD, 14);
             ruleDescriptionLabel.setForeground(Color.BLACK);
             ruleDescriptionLabel.setFont(basicFont);
             ruleDescriptionLabel.setText(rule);
@@ -1143,7 +1223,7 @@ public class Board implements MouseListener {
             Font disableFont = new Font("Serif", Font.BOLD, 20);
             ruleDescriptionLabel.setForeground(Color.RED);
             ruleDescriptionLabel.setFont(disableFont);
-            ruleDescriptionLabel.setText("YOUR DICES POWER ARE DISABLED!");
+            ruleDescriptionLabel.setText("BOOM! ZARURI DEZACTIVATE!");
             this.validate();
             this.repaint();
         }
@@ -1198,7 +1278,7 @@ public class Board implements MouseListener {
             Font rollFont = new Font("Serif", Font.BOLD, 20);
             ruleDescriptionLabel.setForeground(Color.BLUE);
             ruleDescriptionLabel.setFont(rollFont);
-            ruleDescriptionLabel.setText("Your turn! Click the dices to roll 'em!");
+            ruleDescriptionLabel.setText("RANDUL TAU! APASA PE ZARURI PENTRU A LE ARUNCA!");
             this.validate();
             this.repaint();
         }
@@ -1236,7 +1316,7 @@ public class Board implements MouseListener {
             Font disableFont = new Font("Serif", Font.BOLD, 20);
             ruleDescriptionLabel.setForeground(Color.RED);
             ruleDescriptionLabel.setFont(disableFont);
-            ruleDescriptionLabel.setText("YOUR DICES POWER ARE DISABLED!");
+            ruleDescriptionLabel.setText("BOOM! ZARURI DEZACTIVATE!");
             this.validate();
             this.repaint();
         }
@@ -1520,7 +1600,7 @@ public class Board implements MouseListener {
                 if (humanHasMoved){
                     System.out.println(game.getChessboard());
                     humanHasMoved = false;
-                    System.out.println("HE HAS MOVED !! DONT LISTEN TO INTELIJ");
+
                 }
             }
             else { //if (! game.getPlayerToMove().isHuman()){ // calculatoru muta
@@ -1553,10 +1633,6 @@ public class Board implements MouseListener {
 
     }
 
-
-
-
-    //int switchSides = 0;
     /*
     /// this is for the console version
     public void playConsole (){

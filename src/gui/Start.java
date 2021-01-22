@@ -17,6 +17,7 @@ public class Start {
     private static Dimension rulesSize = new Dimension(400,500);
 
     private static String backgroundLocation = "images/mainBackground.png";
+    private static String rulesLocation = "images/rules.png";
 
     private JFrame startFrame;
     private Board boardFrame;
@@ -71,9 +72,20 @@ public class Start {
                 rulesFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 rulesFrame.setResizable(false);
                 rulesFrame.setVisible(true);
-                rulesFrame.setLocation(1100, 200);
+                rulesFrame.setLocation(1109, 200);
 
-                // TO DO: sa pun regulile
+
+                //TODO: sa pun regulile
+                ImageIcon imageIcon = new ImageIcon(rulesLocation);
+                Image image = imageIcon.getImage();
+                Image resizedImage = image.getScaledInstance(385, 460, Image.SCALE_SMOOTH);
+                imageIcon = new ImageIcon(resizedImage);
+
+                JLabel rulesBackgroundLabel = new JLabel("", imageIcon, JLabel.CENTER);
+                rulesBackgroundLabel.setBounds(0, 0, rulesSize.width, rulesSize.height);
+                rulesFrame.add(rulesBackgroundLabel);//, BorderLayout.CENTER);
+
+
             }
         });
 
