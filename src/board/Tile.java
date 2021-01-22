@@ -72,5 +72,14 @@ public class Tile {
     }
 
 
+    public String decode() {
+        String result = "";
+        String linia, coloana;
 
+        linia = String.valueOf(8 - coordX);
+        coloana = String.valueOf( (char) ( 65 + coordY ) );
+
+        result += "[" + coloana + "][" + linia + "] ";
+        return result;
+    }
 }

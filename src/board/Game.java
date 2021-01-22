@@ -204,6 +204,14 @@ public class Game {
         chessboard.removePieceFromTile(move.getStart());
     }
 
+    public ArrayList<Piece> getCapturedPieces() {
+        return capturedPieces;
+    }
+
+    public ArrayList<Move> getMadeMoves() {
+        return madeMoves;
+    }
+
     /*
     while (rowCounter < 20 && game.getStatus() == Game.Status.PLAY ||  // cat timp inca se poate juca
             game.getStatus() == Game.Status.WHITE_IN_CHECK || game.getStatus() == Game.Status.BLACK_IN_CHECK){

@@ -7,6 +7,9 @@ import pieces.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -627,9 +630,42 @@ public class Board implements MouseListener {
     }
 
     private void gameOver() {
+
+        writeTextFiles();
         this.mainFrame.dispose();
         System.exit(0);
         //startGUI.getStartFrame().setVisible(true);
+    }
+
+    private void writeTextFiles() {
+        // write capturedPieces
+        File oldPieceFile = new File("capturedPieces.txt");
+        oldPieceFile.delete();
+        File newPieceFile = new File("capturedPieces.txt");
+        try {
+            FileWriter fwPiece = new FileWriter(newPieceFile, false);
+            ArrayList<Piece> capturedPieces = game.getCapturedPieces();
+            for (Piece piece : capturedPieces){
+                fwPiece.write(piece.decode());
+            }
+            fwPiece.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // write madeMoves
+        File oldMovesFile = new File("madeMoves.txt");
+        oldMovesFile.delete();
+        File newMovesFile = new File("madeMoves.txt");
+        try {
+            FileWriter fwMove = new FileWriter(newMovesFile, false);
+            ArrayList <Move> madeMoves = game.getMadeMoves();
+            for (Move move : madeMoves){
+                fwMove.write(move.decode());
+            }
+            fwMove.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private Move algorithmMove(ArrayList<Move> pcValidMoves, boolean humanIsWhite) {
@@ -744,8 +780,13 @@ public class Board implements MouseListener {
             ArrayList<Move> safeMovesVulnerablePiece = findSafeMovesForVulnerablePiece(tileOfIt, basicMoves, vulnerableTiles);
             Random random = new Random();
             // alegem o mutare basic si safe random
-            if (safeMovesVulnerablePiece.size() > 1){
-                bestBasicMove = safeMovesVulnerablePiece.get(Math.abs(random.nextInt()) % safeMovesVulnerablePiece.size());
+            if (safeMovesVulnerablePiece.size() > 0){
+                if (safeMovesVulnerablePiece.size() == 1){
+                    bestBasicMove = safeMovesVulnerablePiece.get(0);
+                }
+                else {
+                    bestBasicMove = safeMovesVulnerablePiece.get(Math.abs(random.nextInt()) % safeMovesVulnerablePiece.size());
+                }
                 bestValueOfBasicMove = mostImportantVulnerablePiece.getValue();
 
             }

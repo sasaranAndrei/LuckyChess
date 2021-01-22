@@ -45,6 +45,19 @@ public abstract class Move {
         return "Player : " + player.getName() + " can move from : " + start.getCoordinates() + " to " + end.getCoordinates() + "\n";
     }
 
+    public String decode (){
+        String result = "";
+        String player;
+        if (this.player.isHuman()) player = "Omul ";
+        else player = "Computer-ul";
+        result += player + " a mutat de pe pozitia ";
+        result += this.start.decode();
+        result += "la ";
+        result += this.end.decode() + "\n";
+        return result;
+
+    }
+
 
 
 }
