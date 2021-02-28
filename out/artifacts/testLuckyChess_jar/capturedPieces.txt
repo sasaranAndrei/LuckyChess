@@ -1,0 +1,4 @@
+Pion de culoare alba.
+Pion de culoare neagra.
+Tura de culoare alba.
+Regele de culoare alba.
